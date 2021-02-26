@@ -18,7 +18,7 @@ import (
 )
 
 // GenerateBase64Key 生成base64编码的公私钥
-func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyFormatType) (pkStr string, pbkStr string, err error) {
+func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyFormatType) (pkStr, pbkStr string, err error) {
 	var (
 		privateKeyBytes []byte
 		publicKeyBytes  []byte

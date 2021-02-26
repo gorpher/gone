@@ -10,7 +10,7 @@ import (
 // FileSize 获取文件大小
 func FileSize(path string) int64 {
 	fi, err := os.Stat(path)
-	if nil != err {
+	if err != nil {
 		return 0
 	}
 
@@ -35,7 +35,7 @@ func FileExist(file string) bool {
 // FileIsBinary 判断文件是否是二进制文件
 func FileIsBinary(content string) bool {
 	for _, b := range content {
-		if 0 == b {
+		if b == 0 {
 			return true
 		}
 	}
@@ -49,7 +49,7 @@ func FileIsDir(path string) bool {
 	if os.IsNotExist(err) {
 		return false
 	}
-	if nil != err {
+	if err != nil {
 		return false
 	}
 
@@ -58,29 +58,30 @@ func FileIsDir(path string) bool {
 
 // FileCopy 复制文件，代码仅供参考
 // Deprecated
-func FileCopy(source string, dest string) (err error) {
-	sourcefile, err := os.Open(source)
+func FileCopy(source, dest string) (err error) {
+	var sourcefile *os.File
+	sourcefile, err = os.Open(filepath.Clean(source))
 	if err != nil {
 		return err
 	}
 
-	defer sourcefile.Close()
+	defer sourcefile.Close() //nolint
 
 	destfile, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
 
-	defer destfile.Close()
+	defer destfile.Close() //nolint
 
 	_, err = io.Copy(destfile, sourcefile)
-	if err == nil {
-		sourceinfo, err := os.Stat(source)
-		if err != nil {
-			err = os.Chmod(dest, sourceinfo.Mode())
-		}
+	if err != nil {
+		return err
 	}
-	return nil
+	if sourceinfo, errv := os.Stat(source); errv != nil {
+		err = os.Chmod(dest, sourceinfo.Mode())
+	}
+	return err
 }
 
 // FileMove 移动文件，代码仅供参考

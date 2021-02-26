@@ -8,19 +8,19 @@ import (
 )
 
 // RandInt64 指定范围内的随机数字，max必须大于min。
-func RandInt64(min int64, max int64) int64 {
-	rand.Seed(rand.Int63n(time.Now().UnixNano()))
+func RandInt64(min, max int64) int64 {
+	rand.Seed(rand.Int63n(time.Now().UnixNano())) //nolint
 	return min + rand.Int63n(max-min)
 }
 
 // RandInt32 指定范围内的随机数字，max必须大于min。
-func RandInt32(min int32, max int32) int32 {
+func RandInt32(min, max int32) int32 {
 	rand.Seed(rand.Int63n(time.Now().UnixNano()))
 	return min + rand.Int31n(max-min)
 }
 
 // RandInt 指定范围内的随机数字
-func RandInt(min int, max int) int {
+func RandInt(min, max int) int {
 	rand.Seed(rand.Int63n(time.Now().UnixNano()))
 	return min + rand.Intn(max-min)
 }

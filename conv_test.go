@@ -11,7 +11,6 @@ func TestContains(t *testing.T) {
 	}
 }
 
-
 func TestStrToBytes(t *testing.T) {
 	s := "不是所有人的需求都应该被满足"
 	bytes := StrToBytes(s)

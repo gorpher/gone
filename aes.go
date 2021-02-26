@@ -24,7 +24,7 @@ func AesEncryptCBC(origData, key, iv []byte) (encrypted []byte, err error) {
 }
 
 // AesDecryptCBC cbc模式解密
-func AesDecryptCBC(encrypted []byte, key, iv []byte) (decrypted []byte, err error) {
+func AesDecryptCBC(encrypted, key, iv []byte) (decrypted []byte, err error) {
 	var block cipher.Block
 	block, err = aes.NewCipher(key) // 分组秘钥
 	if err != nil {

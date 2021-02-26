@@ -8,14 +8,14 @@ import (
 
 // BytesToStr []byte转string
 func BytesToStr(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return *(*string)(unsafe.Pointer(&b)) //nolint
 }
 
 // StrToBytes string转[]byte
 func StrToBytes(str string) []byte {
-	x := (*[2]uintptr)(unsafe.Pointer(&str))
+	x := (*[2]uintptr)(unsafe.Pointer(&str)) //nolint
 	h := [3]uintptr{x[0], x[1], x[1]}
-	return *(*[]byte)(unsafe.Pointer(&h))
+	return *(*[]byte)(unsafe.Pointer(&h)) //nolint
 }
 
 // Contains 判断字符串是否存在切片中
@@ -37,7 +37,7 @@ func StringReplaceIgnoreCase(text, source, target string) string {
 	var end int
 	for {
 		idx := strings.Index(textLower, searchStrLower)
-		if 0 > idx {
+		if idx <= 0 {
 			break
 		}
 		buf.WriteString(text[:idx])

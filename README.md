@@ -1,6 +1,8 @@
 ### gone 
-gone是一个简单、方便、小巧好用工具包.
+gone是一个简单、方便、小巧好用的工具包.
 
+[![GoDoc](https://pkg.go.dev/badge/github.com/gorpher/gone)](https://pkg.go.dev/github.com/gorpher/gone)
+[![Build Status](https://api.travis-ci.com/gorpher/gone.svg?branch=main&status=passed)](https://travis-ci.org/gorpher/gorpher)
 
 #### 非对称加密解密与签名
 ```go
@@ -132,6 +134,7 @@ func GetMonthRange(year int, month int) (beginTime, endTime int64, err error)
 
 // GetWeek 获得星期的数字
 func GetWeek(t time.Time) int
+
 
 ```
 

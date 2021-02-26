@@ -25,12 +25,12 @@ func TestSignBySM2Bytes(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	rsa, valid, err := VerifyBySM2(pbkStr, signStr)
+	rsaStr, valid, err := VerifyBySM2(pbkStr, signStr)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Log(rsa, valid)
+	t.Log(rsaStr, valid)
 
 	//=============================================================================
 	pkStr, pbkStr, err = GenerateBase64Key(M2, PKCS8)
@@ -44,12 +44,12 @@ func TestSignBySM2Bytes(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	rsa, valid, err = VerifyBySM2(pbkStr, signStr)
+	rsaStr, valid, err = VerifyBySM2(pbkStr, signStr)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Log(rsa, valid)
+	t.Log(rsaStr, valid)
 }
 
 func TestSignByRSABytes(t *testing.T) {
@@ -225,7 +225,6 @@ func TestParsePublicKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 }
 
 func TestParsePrivateKey(t *testing.T) {
@@ -306,10 +305,10 @@ func TestRsaPublicEncrypt(t *testing.T) {
 	}
 }
 
-func testRandStr(len int) string {
-	buff := make([]byte, len)
-	rand.Read(buff)
+func testRandStr(l int) string {
+	buff := make([]byte, l)
+	rand.Read(buff) //nolint
 	str := base64.StdEncoding.EncodeToString(buff)
 	// Base 64 can be longer than len
-	return str[:len]
+	return str[:l]
 }

@@ -7,7 +7,7 @@ import (
 func TestFileSize(t *testing.T) {
 	filename := "./file_test.go"
 	size := FileSize(filename)
-	if 0 > size {
+	if size <= 0 {
 		t.Error("获取文件大小错误")
 	}
 }
@@ -39,7 +39,7 @@ func TestFileFindPath(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if len(s) == 0 {
+	if s == "" {
 		t.Error("file_test.go文件存在")
 	}
 
