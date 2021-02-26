@@ -2,7 +2,7 @@
 gone是一个简单、方便、小巧好用的工具包.
 
 [![GoDoc](https://pkg.go.dev/badge/github.com/gorpher/gone)](https://pkg.go.dev/github.com/gorpher/gone)
-[![Build Status](https://api.travis-ci.com/gorpher/gone.svg?branch=main&status=passed)](https://travis-ci.org/gorpher/gorpher)
+[![Build Status](https://api.travis-ci.com/gorpher/gone.svg?branch=main&status=passed)](https://travis-ci.org/gorpher/gone)
 
 #### 非对称加密解密与签名
 ```go
