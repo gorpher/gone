@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestMacAddr(t *testing.T) {
@@ -55,9 +56,14 @@ func TestFormatBytesString(t *testing.T) {
 	}
 }
 func BenchmarkFormatBytesString(b *testing.B) {
-	b.ResetTimer()
-	for i := EB; i > 0; i-- {
-		FormatBytesString(i)
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	in := make([]float64, b.N)
+	for i := range in {
+		in[i] = Bytes + rng.Float64()*(EB-Bytes)
 	}
-	b.StopTimer()
+	b.ReportAllocs()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		FormatBytesString(int(in[i]))
+	}
 }
