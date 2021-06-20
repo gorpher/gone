@@ -35,9 +35,9 @@ const (
 )
 
 // FormatBytesStringOhMyGod 格式化存储大小，理论上应该使用该方式格式化存储大小，但是实际上不是这样的，呜呜呜呜呜呜。。。。
-func FormatBytesStringOhMyGod(b int) string {
+func FormatBytesStringOhMyGod(b int64) string {
 	if b < KB {
-		return strconv.Itoa(b) + " bytes"
+		return strconv.FormatInt(b, 10) + " bytes"
 	}
 	if b == KB {
 		return "1 KB"
@@ -86,9 +86,9 @@ const (
 
 // FormatBytesString 格式化bytes单位成可阅读单位形式,由于电脑制造商使用的是1000为单位计算磁盘大小
 // 所以基本上使用该函数格式化存储大小
-func FormatBytesString(b int) string {
+func FormatBytesString(b int64) string {
 	if b < kb {
-		return strconv.Itoa(b) + " bytes"
+		return strconv.FormatInt(b, 10) + " bytes"
 	}
 	if b == kb {
 		return "1 KB"
@@ -127,6 +127,6 @@ func FormatBytesString(b int) string {
 	return formatBytesUnit(b, eb, " EB")
 }
 
-func formatBytesUnit(a, b int, suffix string) string {
-	return decimal.NewFromInt(int64(a)).DivRound(decimal.NewFromInt(int64(b)), 2).Truncate(2).String() + suffix
+func formatBytesUnit(a, b int64, suffix string) string {
+	return decimal.NewFromInt(a).DivRound(decimal.NewFromInt(b), 2).Truncate(2).String() + suffix
 }
