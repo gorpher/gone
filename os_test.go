@@ -22,7 +22,7 @@ func TestFormatBytesString(t *testing.T) {
 	dir = filepath.Join(dir, "tmp")
 	var tests = []struct {
 		Name string
-		Size int
+		Size int64
 		Res  string
 	}{
 		{Name: "900b", Size: 900 * Bytes, Res: "900 bytes"},
@@ -64,6 +64,6 @@ func BenchmarkFormatBytesString(b *testing.B) {
 	b.ReportAllocs()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		FormatBytesString(int(in[i]))
+		FormatBytesString(int64(in[i]))
 	}
 }
