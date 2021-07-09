@@ -9,10 +9,11 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"os"
 	"testing"
+
+	"golang.org/x/crypto/ssh"
 )
 
 var licenseStr = "需要签名的字符串"
@@ -397,6 +398,9 @@ func TestGenerateSSHKey(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 		return
+	}
+	if key == nil {
+		t.Error("key not found")
 	}
 	_, err = ssh.ParsePublicKey(key.Marshal())
 	if err != nil {

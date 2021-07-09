@@ -47,7 +47,7 @@ func Handle(pattern string, handlerFunc http.HandlerFunc) {
 	handle(pattern, "*", handlerFunc)
 }
 
-func handle(pattern string, method string, handlerFunc http.HandlerFunc) {
+func handle(pattern, method string, handlerFunc http.HandlerFunc) {
 	var first = false
 	if _, ok := methods[pattern]; !ok {
 		methods[pattern] = map[string]http.HandlerFunc{

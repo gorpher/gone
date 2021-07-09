@@ -1,10 +1,11 @@
 package gone
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"math/rand"
 	"strings"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/rs/xid"

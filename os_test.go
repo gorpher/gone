@@ -18,7 +18,8 @@ func TestMacAddr(t *testing.T) {
 func TestFormatBytesString(t *testing.T) {
 	t.Log(KB, MB, GB, TB, PB, EB)
 	t.Log(kb, mb, gb, tb, pb, eb)
-	dir, _ := os.Getwd()
+	var dir string
+	dir, _ = os.Getwd()
 	dir = filepath.Join(dir, "tmp")
 	var tests = []struct {
 		Name string

@@ -1,10 +1,11 @@
 package gone
 
 import (
-	"github.com/shopspring/decimal"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 // MacAddr 获取机器mac地址，返回mac字串数组
@@ -35,7 +36,7 @@ const (
 )
 
 // FormatBytesStringOhMyGod 格式化存储大小，理论上应该使用该方式格式化存储大小，但是实际上不是这样的，呜呜呜呜呜呜。。。。
-func FormatBytesStringOhMyGod(b int64) string {
+func FormatBytesStringOhMyGod(b int64) string { //nolint
 	if b < KB {
 		return strconv.FormatInt(b, 10) + " bytes"
 	}
@@ -86,7 +87,7 @@ const (
 
 // FormatBytesString 格式化bytes单位成可阅读单位形式,由于电脑制造商使用的是1000为单位计算磁盘大小
 // 所以基本上使用该函数格式化存储大小
-func FormatBytesString(b int64) string {
+func FormatBytesString(b int64) string { //nolint
 	if b < kb {
 		return strconv.FormatInt(b, 10) + " bytes"
 	}

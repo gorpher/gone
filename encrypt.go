@@ -11,10 +11,11 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"strings"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/tjfoc/gmsm/sm2"
 	x509sm "github.com/tjfoc/gmsm/x509"
@@ -79,14 +80,16 @@ func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyF
 }
 
 // GenerateRSAKeyToMemory 生成PEM格式RSA公私钥，返回字节格式。
-func GenerateRSAKeyToMemory(bits RSABit) ([]byte, []byte, error) {
+func GenerateRSAKeyToMemory(bits RSABit) (privateBytes []byte, publicBytes []byte, err error) {
 	var privateBuffer = bytes.Buffer{}
 	var publicBuffer = bytes.Buffer{}
-	err := GenerateRSAKey(&privateBuffer, &publicBuffer, bits)
+	err = GenerateRSAKey(&privateBuffer, &publicBuffer, bits)
 	if err != nil {
-		return []byte{}, []byte{}, err
+		return privateBytes, publicBytes, err
 	}
-	return privateBuffer.Bytes(), publicBuffer.Bytes(), err
+	privateBytes = privateBuffer.Bytes()
+	publicBytes = publicBuffer.Bytes()
+	return privateBytes, publicBytes, err
 }
 
 // GenerateRSAKey 生成PEM格式RSA公私钥，写入到io.Writer中
@@ -118,11 +121,8 @@ func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
 }
 
 // GenerateSSHKey 生成ssh密钥队
-func GenerateSSHKey(bits RSABit) ([]byte, []byte, error) {
+func GenerateSSHKey(bits RSABit) (pkBytes []byte, pbkBytes []byte, err error) {
 	var priKey *rsa.PrivateKey
-	var pkBytes []byte
-	var pbkBytes []byte
-	var err error
 	priKey, err = rsa.GenerateKey(rand.Reader, int(bits))
 	if err != nil {
 		return nil, nil, err
@@ -321,7 +321,7 @@ func VerifyByRSA(publicKeyBase64, licenseCode string) (license string, valid boo
 }
 
 // EncryptByRSABytes 使用RSA公钥加密
-func EncryptByRSABytes(publicKey []byte, content []byte) ([]byte, error) {
+func EncryptByRSABytes(publicKey, content []byte) ([]byte, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
 		return nil, errors.New("public key error")
@@ -441,7 +441,7 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	)
 
 	privateKey, err = x509.ParsePKCS1PrivateKey(derBytes)
-	if err == nil {
+	if err != nil {
 		return privateKey, err
 	}
 	// 这里不在使用pem解析，入参直接是derBytes类型
@@ -472,7 +472,7 @@ func DecodePemHexBase64(keyStr string) ([]byte, error) {
 		return block.Bytes, nil
 	}
 	derBytes, err := hex.DecodeString(keyStr)
-	if err == nil {
+	if err != nil {
 		return derBytes, err
 	}
 	return base64.StdEncoding.DecodeString(keyStr)

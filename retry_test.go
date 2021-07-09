@@ -33,7 +33,7 @@ func TestRetryFail(t *testing.T) {
 		return fmt.Errorf("retry")
 	})
 
-	if err == nil || err.Error() != "retry" {
+	if err != nil && err.Error() != "retry" {
 		t.Errorf("error should be occured")
 	}
 
