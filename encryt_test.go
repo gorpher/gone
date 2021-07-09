@@ -1,12 +1,17 @@
 package gone
 
 import (
+	bytes2 "bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
+	"errors"
 	"fmt"
+	"golang.org/x/crypto/ssh"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -311,4 +316,91 @@ func testRandStr(l int) string {
 	str := base64.StdEncoding.EncodeToString(buff)
 	// Base 64 can be longer than len
 	return str[:l]
+}
+
+func TestGenerateRSAKey(t *testing.T) {
+	err := GenerateRSAKey(os.Stdout, os.Stdout, RSA1024)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = GenerateRSAKey(os.Stdout, os.Stdout, RSA2048)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}
+
+func TestEncryptByRSABytes(t *testing.T) {
+	pkBytes, pbkBytes, err := GenerateRSAKeyToMemory(2048)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var publicKey *rsa.PublicKey
+	pbkBlock, _ := pem.Decode(pbkBytes)
+	if pbkBlock == nil {
+		t.Error(errors.New("public key error"))
+		return
+	}
+	publicKey, err = x509.ParsePKCS1PublicKey(pbkBlock.Bytes)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var privateKey *rsa.PrivateKey
+	pkBlock, _ := pem.Decode(pkBytes)
+	if pkBlock == nil {
+		t.Error(errors.New("private key error"))
+		return
+	}
+	var pi interface{}
+	var ok bool
+	pi, err = x509.ParsePKCS8PrivateKey(pkBlock.Bytes)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	privateKey, ok = pi.(*rsa.PrivateKey)
+	if !ok || privateKey == nil {
+		t.Error(errors.New("private key assert failed"))
+	}
+	content := []byte("hello world")
+	bytes, err := EncryptByRSA(publicKey, content)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	decryptBytes, err := DecryptByRSA(privateKey, bytes)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !bytes2.Equal(decryptBytes, content) {
+		t.Error("DecryptByRSA ERROR")
+	}
+
+}
+
+func TestGenerateSSHKey(t *testing.T) {
+	//var publicKey *rsa.PublicKey
+	//var privateKey *rsa.PrivateKey
+	//var pkBytes []byte
+	var pbkBytes []byte
+	var err error
+	_, pbkBytes, err = GenerateSSHKey(RSA2048)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	key, _, _, _, err := ssh.ParseAuthorizedKey(pbkBytes)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = ssh.ParsePublicKey(key.Marshal())
+	if err != nil {
+		t.Error(err)
+		return
+	}
 }

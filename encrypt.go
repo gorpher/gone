@@ -1,6 +1,7 @@
 package gone
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -10,11 +11,22 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
+	"golang.org/x/crypto/ssh"
+	"io"
 	"log"
 	"strings"
 
 	"github.com/tjfoc/gmsm/sm2"
 	x509sm "github.com/tjfoc/gmsm/x509"
+)
+
+// 最重要的一句话，公钥加密私钥解密，私钥签名公钥验证。
+
+type RSABit int
+
+const (
+	RSA1024 RSABit = 1024
+	RSA2048 RSABit = 2048
 )
 
 // GenerateBase64Key 生成base64编码的公私钥
@@ -64,6 +76,71 @@ func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyF
 		return pkStr, pbkStr, err
 	}
 	return "", "", err
+}
+
+// GenerateRSAKeyToMemory 生成PEM格式RSA公私钥，返回字节格式。
+func GenerateRSAKeyToMemory(bits RSABit) ([]byte, []byte, error) {
+	var privateBuffer = bytes.Buffer{}
+	var publicBuffer = bytes.Buffer{}
+	err := GenerateRSAKey(&privateBuffer, &publicBuffer, bits)
+	if err != nil {
+		return []byte{}, []byte{}, err
+	}
+	return privateBuffer.Bytes(), publicBuffer.Bytes(), err
+}
+
+// GenerateRSAKey 生成PEM格式RSA公私钥，写入到io.Writer中
+func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
+	var priKey *rsa.PrivateKey
+	var pkBytes []byte
+	var pbkBytes []byte
+	var err error
+	priKey, err = rsa.GenerateKey(rand.Reader, int(bits))
+	if err != nil {
+		return err
+	}
+	pkBytes, err = x509.MarshalPKCS8PrivateKey(priKey)
+	if err != nil {
+		return err
+	}
+	pbkBytes = x509.MarshalPKCS1PublicKey(&(priKey.PublicKey))
+	err = pem.Encode(privateWriter, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: pkBytes,
+	})
+	if err != nil {
+		return err
+	}
+	return pem.Encode(publicWriter, &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pbkBytes,
+	})
+}
+
+// GenerateSSHKey 生成ssh密钥队
+func GenerateSSHKey(bits RSABit) ([]byte, []byte, error) {
+	var priKey *rsa.PrivateKey
+	var pkBytes []byte
+	var pbkBytes []byte
+	var err error
+	priKey, err = rsa.GenerateKey(rand.Reader, int(bits))
+	if err != nil {
+		return nil, nil, err
+	}
+	pkBytes, err = x509.MarshalPKCS8PrivateKey(priKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	pkBytes = pem.EncodeToMemory(&pem.Block{
+		Bytes: pkBytes,
+		Type:  "RSA PRIVATE KEY",
+	})
+	publicKey, err := ssh.NewPublicKey(&(priKey.PublicKey))
+	if err != nil {
+		return nil, nil, err
+	}
+	pbkBytes = ssh.MarshalAuthorizedKey(publicKey)
+	return pkBytes, pbkBytes, err
 }
 
 // SignBySM2Bytes 使用sm2私钥签名字符串，返回base64编码的license
@@ -241,6 +318,58 @@ func VerifyByRSA(publicKeyBase64, licenseCode string) (license string, valid boo
 		return "", false, err
 	}
 	return string(licenseInfo), true, nil
+}
+
+// EncryptByRSABytes 使用RSA公钥加密
+func EncryptByRSABytes(publicKey []byte, content []byte) ([]byte, error) {
+	block, _ := pem.Decode(publicKey)
+	if block == nil {
+		return nil, errors.New("public key error")
+	}
+	pi, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	// 类型断言
+	var pb *rsa.PublicKey
+	var ok bool
+	pb, ok = pi.(*rsa.PublicKey)
+	if !ok || pb == nil {
+		return nil, errors.New("public key assert failed")
+	}
+	return EncryptByRSA(pb, content)
+}
+
+// DecryptByRSABytes 使用RSA私钥解密
+func DecryptByRSABytes(privateKey []byte, ciphertext []byte) ([]byte, error) {
+	var pk *rsa.PrivateKey
+	var ok bool
+	block, _ := pem.Decode(privateKey)
+	if block == nil {
+		return nil, errors.New("private key error")
+	}
+	pk, errv := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if errv != nil {
+		pi, errv := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if errv != nil {
+			return nil, errv
+		}
+		pk, ok = pi.(*rsa.PrivateKey)
+		if !ok || pk == nil {
+			return nil, errors.New("private key assert failed")
+		}
+	}
+	return rsa.DecryptPKCS1v15(rand.Reader, pk, ciphertext)
+}
+
+// EncryptByRSA 使用RSA公钥加密
+func EncryptByRSA(publicKey *rsa.PublicKey, content []byte) ([]byte, error) {
+	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, content)
+}
+
+// DecryptByRSA 使用RSA私钥解密
+func DecryptByRSA(privateKey *rsa.PrivateKey, ciphertext []byte) ([]byte, error) {
+	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }
 
 // RsaPublicEncrypt Rsa公钥加密，参数publicKeyStr必须是hex、base64或者是pem编码

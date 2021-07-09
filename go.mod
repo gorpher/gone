@@ -9,5 +9,6 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/tjfoc/gmsm v1.4.0
+	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
