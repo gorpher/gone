@@ -42,6 +42,12 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error)
 // DecodePemHexBase64 解析pem或者hex或者base64编码成der编码
 func DecodePemHexBase64(keyStr string) ([]byte, error)
 
+// EncryptByRSABytes 使用RSA公钥加密
+func EncryptByRSABytes(publicKey, content []byte) ([]byte, error)
+
+// DecryptByRSABytes 使用RSA私钥解密
+func DecryptByRSABytes(privateKey []byte, ciphertext []byte) ([]byte, error) {
+
 ```
 
 
