@@ -441,7 +441,8 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	)
 
 	privateKey, err = x509.ParsePKCS1PrivateKey(derBytes)
-	if err != nil {
+	// if parse ok return private key
+	if err == nil {
 		return privateKey, err
 	}
 	// 这里不在使用pem解析，入参直接是derBytes类型
@@ -472,7 +473,8 @@ func DecodePemHexBase64(keyStr string) ([]byte, error) {
 		return block.Bytes, nil
 	}
 	derBytes, err := hex.DecodeString(keyStr)
-	if err != nil {
+	// if parse ok return derBytes
+	if err == nil {
 		return derBytes, err
 	}
 	return base64.StdEncoding.DecodeString(keyStr)

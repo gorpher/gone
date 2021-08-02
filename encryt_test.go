@@ -9,7 +9,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
@@ -177,27 +176,27 @@ mNGQxhmlSfLNpw/1AgMBAAE=
 func TestDecodePemHexBase64(t *testing.T) {
 	_, err := DecodePemHexBase64(PrivateKeyPemStr)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = DecodePemHexBase64(PrivateKeyBase64Str)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = DecodePemHexBase64(PrivateKeyHexStr)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = DecodePemHexBase64(PublicKeyPemStr)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = DecodePemHexBase64(PublicKeyBase64Str)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	_, err = DecodePemHexBase64(PublicKeyHexStr)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 }
 
