@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// FileSize 获取文件大小
+// FileSize 获取文件大小.
 func FileSize(path string) int64 {
 	fi, err := os.Stat(path)
 	if err != nil {
@@ -17,7 +17,7 @@ func FileSize(path string) int64 {
 	return fi.Size()
 }
 
-// FileSize 判断文件是否存在
+// FileExist 判断文件是否存在.
 func FileExist(file string) bool {
 	_, err := os.Stat(file)
 	if err != nil {
@@ -32,7 +32,7 @@ func FileExist(file string) bool {
 	return true
 }
 
-// FileIsBinary 判断文件是否是二进制文件
+// FileIsBinary 判断文件是否是二进制文件.
 func FileIsBinary(content string) bool {
 	for _, b := range content {
 		if b == 0 {
@@ -43,7 +43,7 @@ func FileIsBinary(content string) bool {
 	return false
 }
 
-// FileIsDir 判断文件是否是目录
+// FileIsDir 判断文件是否是目录.
 func FileIsDir(path string) bool {
 	fio, err := os.Lstat(path)
 	if os.IsNotExist(err) {
@@ -56,7 +56,7 @@ func FileIsDir(path string) bool {
 	return fio.IsDir()
 }
 
-// FileCopy 复制文件，代码仅供参考
+// FileCopy 复制文件，代码仅供参考.
 // Deprecated
 func FileCopy(source, dest string) (err error) {
 	var sourcefile *os.File
@@ -84,13 +84,13 @@ func FileCopy(source, dest string) (err error) {
 	return err
 }
 
-// FileMove 移动文件，代码仅供参考
+// FileMove 移动文件，代码仅供参考.
 // Deprecated
 func FileMove(src, dest string) error {
 	dir := filepath.Dir(dest)
 	_, err := os.Stat(dir)
 	if err != nil {
-		err := os.MkdirAll(dir, os.FileMode(0755))
+		err = os.MkdirAll(dir, os.FileMode(0755))
 		if err != nil {
 			return err
 		}
@@ -98,30 +98,26 @@ func FileMove(src, dest string) error {
 	return os.Rename(src, dest)
 }
 
-// FileFindAPath 获取文件名路径，首先判断文件是否可以直接访问，优先获取当前可执行文件夹下，再去找工作路径下。
+// FileFindPath 获取文件名路径，首先判断文件是否可以直接访问，优先获取当前可执行文件夹下，再去找工作路径下.
 func FileFindPath(fname string) (string, error) {
-	if filepath.IsAbs(fname) {
-		if !FileExist(fname) {
-			return "", fmt.Errorf("配置文件%s不存在", fname)
-		}
-	} else {
-		location, err := os.Executable()
+	if filepath.IsAbs(fname) && !FileExist(fname) {
+		return "", fmt.Errorf("配置文件%s不存在", fname)
+	}
+	location, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	fname = filepath.Join(filepath.Dir(location), fname)
+	if !FileExist(fname) {
+		location, err := os.Getwd()
 		if err != nil {
 			return "", err
 		}
-		fname = filepath.Join(filepath.Dir(location), fname)
+		_, fname = filepath.Split(fname)
+		fname = filepath.Join(location, fname)
 		if !FileExist(fname) {
-			location, err := os.Getwd()
-			if err != nil {
-				return "", err
-			}
-			_, fname = filepath.Split(fname)
-			fname = filepath.Join(location, fname)
-			if !FileExist(fname) {
-				return "", fmt.Errorf("配置文件%s不存在", fname)
-			}
+			return "", fmt.Errorf("配置文件%s不存在", fname)
 		}
-
 	}
 	return filepath.Clean(fname), nil
 }

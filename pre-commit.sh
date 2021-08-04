@@ -14,7 +14,6 @@ for file in  *.go
 do
     goimports -w -v "${file##/*/}"
 done
-
-
 golangci-lint run -c ./.golangci.yml
+
 go mod tidy

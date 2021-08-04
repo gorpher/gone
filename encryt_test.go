@@ -139,7 +139,6 @@ func TestGenerateBase64Key(t *testing.T) {
 	}
 	t.Log("私钥：", pkStr)
 	t.Log("公钥：", pbkStr)
-
 }
 
 const (
@@ -264,8 +263,8 @@ func TestParsePrivateKey(t *testing.T) {
 }
 
 func TestRsaPublicEncrypt(t *testing.T) {
-	//每次加密的字节数，不能超过密钥的长度值减去11,而每次加密得到的密文长度，却恰恰是密钥的长度
-	var textBytes = []byte(testRandStr(100))
+	// 每次加密的字节数，不能超过密钥的长度值减去11,而每次加密得到的密文长度，却恰恰是密钥的长度
+	textBytes := []byte(testRandStr(100))
 	encrypt, err := RsaPublicEncrypt(PublicKeyPemStr, textBytes)
 	if err != nil {
 		t.Fatal(err)
@@ -379,13 +378,12 @@ func TestEncryptByRSABytes(t *testing.T) {
 	if !bytes2.Equal(decryptBytes, content) {
 		t.Error("DecryptByRSA ERROR")
 	}
-
 }
 
 func TestGenerateSSHKey(t *testing.T) {
-	//var publicKey *rsa.PublicKey
-	//var privateKey *rsa.PrivateKey
-	//var pkBytes []byte
+	// var publicKey *rsa.PublicKey
+	// var privateKey *rsa.PrivateKey
+	// var pkBytes []byte
 	var pbkBytes []byte
 	var err error
 	_, pbkBytes, err = GenerateSSHKey(RSA2048)

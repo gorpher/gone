@@ -6,7 +6,7 @@ import (
 	"crypto/cipher"
 )
 
-// AesEncryptCBC 加密 AES-128。key长度：16, 24, 32 bytes 对应 AES-128, AES-192, AES-256
+// AesEncryptCBC 加密 AES-128 key长度：16, 24, 32 bytes 对应 AES-128, AES-192, AES-256.
 func AesEncryptCBC(origData, key, iv []byte) (encrypted []byte, err error) {
 	var block cipher.Block
 	// 分组秘钥
@@ -23,7 +23,7 @@ func AesEncryptCBC(origData, key, iv []byte) (encrypted []byte, err error) {
 	return encrypted, err
 }
 
-// AesDecryptCBC cbc模式解密
+// AesDecryptCBC cbc模式解密.
 func AesDecryptCBC(encrypted, key, iv []byte) (decrypted []byte, err error) {
 	var block cipher.Block
 	block, err = aes.NewCipher(key) // 分组秘钥
@@ -37,14 +37,14 @@ func AesDecryptCBC(encrypted, key, iv []byte) (decrypted []byte, err error) {
 	return decrypted, err
 }
 
-// 填充明文
+// pkcs5Padding 填充明文.
 func pkcs5Padding(plainText []byte, blockSize int) []byte {
 	padding := blockSize - len(plainText)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(plainText, padtext...)
 }
 
-// 去除填充
+// pkcs5UnPadding 去除填充.
 func pkcs5UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unpadding := int(origData[length-1])

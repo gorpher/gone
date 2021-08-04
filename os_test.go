@@ -21,7 +21,7 @@ func TestFormatBytesString(t *testing.T) {
 	var dir string
 	dir, _ = os.Getwd()
 	dir = filepath.Join(dir, "tmp")
-	var tests = []struct {
+	tests := []struct {
 		Name string
 		Size int64
 		Res  string
@@ -56,6 +56,7 @@ func TestFormatBytesString(t *testing.T) {
 		//})
 	}
 }
+
 func BenchmarkFormatBytesString(b *testing.B) {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	in := make([]float64, b.N)

@@ -16,7 +16,6 @@ func TestRetrySuccess(t *testing.T) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		t.Errorf("error should be nil, %s", err)
 	}

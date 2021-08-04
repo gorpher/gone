@@ -9,6 +9,7 @@ func TestIDInt64(t *testing.T) {
 		t.Error("Generate int64 ID error")
 	}
 }
+
 func TestIDString(t *testing.T) {
 	t.Log(ID.SString())
 	if ID.SString() == "" {
@@ -25,8 +26,7 @@ func TestId_XID(t *testing.T) {
 	if ID.XID().String() == "" {
 		t.Error("Generate string ID error")
 	}
-	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
+	// r := rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 func TestId_RandString(t *testing.T) {

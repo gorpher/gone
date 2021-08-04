@@ -30,8 +30,9 @@ const (
 	RSA2048 RSABit = 2048
 )
 
-// GenerateBase64Key 生成base64编码的公私钥
-func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyFormatType) (pkStr, pbkStr string, err error) {
+// GenerateBase64Key 生成base64编码的公私钥.
+func GenerateBase64Key(secretLength SecretKeyLengthType,
+	secretFormat SecretKeyFormatType) (pkStr, pbkStr string, err error) {
 	var (
 		privateKeyBytes []byte
 		publicKeyBytes  []byte
@@ -52,7 +53,8 @@ func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyF
 		if err != nil {
 			return "", "", err
 		}
-		return base64.RawURLEncoding.EncodeToString(privateKeyBytes), base64.RawURLEncoding.EncodeToString(publicKeyBytes), nil
+		return base64.RawURLEncoding.EncodeToString(privateKeyBytes),
+			base64.RawURLEncoding.EncodeToString(publicKeyBytes), nil
 	}
 	var priKey *rsa.PrivateKey
 	if secretLength == RSA {
@@ -79,10 +81,10 @@ func GenerateBase64Key(secretLength SecretKeyLengthType, secretFormat SecretKeyF
 	return "", "", err
 }
 
-// GenerateRSAKeyToMemory 生成PEM格式RSA公私钥，返回字节格式。
+// GenerateRSAKeyToMemory 生成PEM格式RSA公私钥，返回字节格式.
 func GenerateRSAKeyToMemory(bits RSABit) (privateBytes []byte, publicBytes []byte, err error) {
-	var privateBuffer = bytes.Buffer{}
-	var publicBuffer = bytes.Buffer{}
+	privateBuffer := bytes.Buffer{}
+	publicBuffer := bytes.Buffer{}
 	err = GenerateRSAKey(&privateBuffer, &publicBuffer, bits)
 	if err != nil {
 		return privateBytes, publicBytes, err
@@ -92,7 +94,7 @@ func GenerateRSAKeyToMemory(bits RSABit) (privateBytes []byte, publicBytes []byt
 	return privateBytes, publicBytes, err
 }
 
-// GenerateRSAKey 生成PEM格式RSA公私钥，写入到io.Writer中
+// GenerateRSAKey 生成PEM格式RSA公私钥，写入到io.Writer中.
 func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
 	var priKey *rsa.PrivateKey
 	var pkBytes []byte
@@ -120,7 +122,7 @@ func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
 	})
 }
 
-// GenerateSSHKey 生成ssh密钥队
+// GenerateSSHKey 生成ssh密钥队.
 func GenerateSSHKey(bits RSABit) (pkBytes []byte, pbkBytes []byte, err error) {
 	var priKey *rsa.PrivateKey
 	priKey, err = rsa.GenerateKey(rand.Reader, int(bits))
@@ -143,7 +145,7 @@ func GenerateSSHKey(bits RSABit) (pkBytes []byte, pbkBytes []byte, err error) {
 	return pkBytes, pbkBytes, err
 }
 
-// SignBySM2Bytes 使用sm2私钥签名字符串，返回base64编码的license
+// SignBySM2Bytes 使用sm2私钥签名字符串，返回base64编码的license.
 func SignBySM2Bytes(privateKey, licenseBytes []byte) (license string, err error) {
 	var key *sm2.PrivateKey
 	privateKey, err = base64.RawURLEncoding.DecodeString(string(privateKey))
@@ -157,7 +159,7 @@ func SignBySM2Bytes(privateKey, licenseBytes []byte) (license string, err error)
 	return SignBySM2(key, licenseBytes)
 }
 
-// SignBySM2  使用sm2私钥对象指针签名字符串，返回base64编码的license
+// SignBySM2  使用sm2私钥对象指针签名字符串，返回base64编码的license.
 func SignBySM2(privateKey *sm2.PrivateKey, licenseBytes []byte) (license string, err error) {
 	var (
 		signBytes        []byte
@@ -180,7 +182,7 @@ func SignBySM2(privateKey *sm2.PrivateKey, licenseBytes []byte) (license string,
 	return
 }
 
-// SignByRSABytes 使用rsa私钥签名字符串，返回base64编码的license
+// SignByRSABytes 使用rsa私钥签名字符串，返回base64编码的license.
 func SignByRSABytes(key, licenseBytes []byte) (string, error) {
 	var (
 		privateKey *rsa.PrivateKey
@@ -206,7 +208,7 @@ func SignByRSABytes(key, licenseBytes []byte) (string, error) {
 	return SignByRSA(privateKey, licenseBytes)
 }
 
-// SignByRSA 使用rsa私钥对象指针签名字符串，返回base64编码的license
+// SignByRSA 使用rsa私钥对象指针签名字符串，返回base64编码的license.
 func SignByRSA(key *rsa.PrivateKey, licenseBytes []byte) (license string, err error) {
 	var (
 		signBytes        []byte
@@ -229,7 +231,7 @@ func SignByRSA(key *rsa.PrivateKey, licenseBytes []byte) (license string, err er
 	return license, nil
 }
 
-// VerifyBySM2 使用sm2公钥验证签名的license
+// VerifyBySM2 使用sm2公钥验证签名的license.
 func VerifyBySM2(publicKeyBase64, licenseCode string) (license string, valid bool, err error) {
 	var (
 		publicKeyBytes, signBytes []byte
@@ -272,7 +274,7 @@ func VerifyBySM2(publicKeyBase64, licenseCode string) (license string, valid boo
 	return string(licenseInfo), true, nil
 }
 
-// VerifyByRSA 使用rsa公钥验证签名的license
+// VerifyByRSA 使用rsa公钥验证签名的license.
 func VerifyByRSA(publicKeyBase64, licenseCode string) (license string, valid bool, err error) {
 	var (
 		publicKeyBytes, signBytes []byte
@@ -320,7 +322,7 @@ func VerifyByRSA(publicKeyBase64, licenseCode string) (license string, valid boo
 	return string(licenseInfo), true, nil
 }
 
-// EncryptByRSABytes 使用RSA公钥加密
+// EncryptByRSABytes 使用RSA公钥加密.
 func EncryptByRSABytes(publicKey, content []byte) ([]byte, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
@@ -340,7 +342,7 @@ func EncryptByRSABytes(publicKey, content []byte) ([]byte, error) {
 	return EncryptByRSA(pb, content)
 }
 
-// DecryptByRSABytes 使用RSA私钥解密
+// DecryptByRSABytes 使用RSA私钥解密.
 func DecryptByRSABytes(privateKey []byte, ciphertext []byte) ([]byte, error) {
 	var pk *rsa.PrivateKey
 	var ok bool
@@ -362,17 +364,17 @@ func DecryptByRSABytes(privateKey []byte, ciphertext []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, pk, ciphertext)
 }
 
-// EncryptByRSA 使用RSA公钥加密
+// EncryptByRSA 使用RSA公钥加密.
 func EncryptByRSA(publicKey *rsa.PublicKey, content []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, content)
 }
 
-// DecryptByRSA 使用RSA私钥解密
+// DecryptByRSA 使用RSA私钥解密.
 func DecryptByRSA(privateKey *rsa.PrivateKey, ciphertext []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }
 
-// RsaPublicEncrypt Rsa公钥加密，参数publicKeyStr必须是hex、base64或者是pem编码
+// RsaPublicEncrypt Rsa公钥加密，参数publicKeyStr必须是hex、base64或者是pem编码.
 func RsaPublicEncrypt(publicKeyStr string, textBytes []byte) ([]byte, error) {
 	var (
 		err       error
@@ -389,7 +391,7 @@ func RsaPublicEncrypt(publicKeyStr string, textBytes []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, textBytes)
 }
 
-// ParsePublicKey 解析公钥，derBytes可以使用DecodePemHexBase64函数获取
+// ParsePublicKey 解析公钥，derBytes可以使用DecodePemHexBase64函数获取.
 func ParsePublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 	var (
 		pub interface{}
@@ -399,8 +401,8 @@ func ParsePublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 	if err == nil {
 		return publicKey, nil
 	}
-	err = nil
-	// 这里不在使用pem解析，入参直接是derBytes类型
+	err = nil //nolint
+	//这里不在使用pem解析，入参直接是derBytes类型
 	//block, _ := pem.Decode(derBytes)
 	//if block == nil {
 	//	return nil, errors.New("unable to decode publicKey to request")
@@ -417,11 +419,9 @@ func ParsePublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 	return publicKey, nil
 }
 
-// RsaPrivateDecrypt 解析rsa私钥，参数privateKeyStr必须是hex、base64或者是pem编码
+// RsaPrivateDecrypt 解析rsa私钥，参数privateKeyStr必须是hex、base64或者是pem编码.
 func RsaPrivateDecrypt(privateKeyStr string, cipherBytes []byte) (textBytes []byte, err error) {
-	var (
-		privateKey *rsa.PrivateKey
-	)
+	var privateKey *rsa.PrivateKey
 	derBytes, err := DecodePemHexBase64(privateKeyStr)
 	if err != nil {
 		return nil, err
@@ -433,7 +433,7 @@ func RsaPrivateDecrypt(privateKeyStr string, cipherBytes []byte) (textBytes []by
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, cipherBytes)
 }
 
-// ParsePrivateKey 解析私钥，derBytes可以使用DecodePemHexBase64函数获取
+// ParsePrivateKey 解析私钥，derBytes可以使用DecodePemHexBase64函数获取.
 func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	var (
 		pk interface{}
@@ -443,14 +443,14 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	privateKey, err = x509.ParsePKCS1PrivateKey(derBytes)
 	// if parse ok return private key
 	if err == nil {
-		return privateKey, err
+		return privateKey, nil
 	}
 	// 这里不在使用pem解析，入参直接是derBytes类型
 	//block, _ := pem.Decode(derBytes)
 	//if block == nil {
 	//	return nil, errors.New("unable to decode privateKey to request")
 	//}
-	err = nil
+	err = nil // nolint
 	pk, err = x509.ParsePKCS8PrivateKey(derBytes)
 	if err != nil {
 		return nil, errors.New("解析rsa私钥失败，你可能传递的是公钥。" + err.Error())
@@ -462,7 +462,7 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	return privateKey, nil
 }
 
-// DecodePemHexBase64 解析pem或者hex或者base64编码成der编码
+// DecodePemHexBase64 解析pem或者hex或者base64编码成der编码.
 func DecodePemHexBase64(keyStr string) ([]byte, error) {
 	if strings.Contains(keyStr, "RSA PRIVATE KEY") ||
 		strings.Contains(keyStr, "PUBLIC KEY") {
@@ -475,7 +475,7 @@ func DecodePemHexBase64(keyStr string) ([]byte, error) {
 	derBytes, err := hex.DecodeString(keyStr)
 	// if parse ok return derBytes
 	if err == nil {
-		return derBytes, err
+		return derBytes, nil
 	}
 	return base64.StdEncoding.DecodeString(keyStr)
 }

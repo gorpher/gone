@@ -6,7 +6,7 @@ import (
 )
 
 func TestRandInt(t *testing.T) {
-	var i = 1
+	i := 1
 	for i < math.MaxInt16 {
 		randInt := RandInt(0, i)
 		if randInt > i {
@@ -41,7 +41,7 @@ func TestRandLowerAndUpper(t *testing.T) {
 }
 
 func BenchmarkRandString(b *testing.B) {
-	//BenchmarkRandString-4   	    5454	    189408 ns/op
+	// BenchmarkRandString-4   	    5454	    189408 ns/op
 	var s string
 	for i := 0; i < b.N; i++ {
 		s = RandString(math.MaxInt16)
@@ -52,7 +52,7 @@ func BenchmarkRandString(b *testing.B) {
 }
 
 func BenchmarkRandAlphaString(b *testing.B) {
-	//BenchmarkRandAlphaString-4   	    1153	    952326 ns/op
+	// BenchmarkRandAlphaString-4   	    1153	    952326 ns/op
 	var s string
 	for i := 0; i < b.N; i++ {
 		s = RandAlphaString(math.MaxInt16)

@@ -11,11 +11,11 @@ import (
 	"github.com/rs/xid"
 )
 
-//UUID	16 bytes	36 chars	configuration free, not sortable
-//shortuuid	16 bytes	22 chars	configuration free, not sortable
-//Snowflake	8 bytes	up to 20 chars	needs machine/DC configuration, needs central server, sortable
-//MongoID	12 bytes	24 chars	configuration free, sortable
-//xid	12 bytes	20 chars	configuration free, sortable
+// UUID	16 bytes	36 chars	configuration free, not sortable
+// shortuuid	16 bytes	22 chars	configuration free, not sortable
+// Snowflake	8 bytes	up to 20 chars	needs machine/DC configuration, needs central server, sortable
+// MongoID	12 bytes	24 chars	configuration free, sortable
+// xid	12 bytes	20 chars	configuration free, sortable
 
 type IDGenerator interface {
 	Snowflake() snowflake.ID
@@ -62,12 +62,12 @@ func (i *id) UString() string {
 	return uuid.NewV4().String()
 }
 
-// RandString 最大64个字母
+// RandString 最大64个字母.
 func (i *id) RandString(count int) string {
 	if count > 62 {
 		count = 62
 	}
-	var a = []byte{
+	a := []byte{
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 		'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',

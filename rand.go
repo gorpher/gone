@@ -7,25 +7,25 @@ import (
 	"time"
 )
 
-// RandInt64 指定范围内的随机数字，max必须大于min。
+// RandInt64 指定范围内的随机数字，max必须大于min.
 func RandInt64(min, max int64) int64 {
 	rand.Seed(rand.Int63n(time.Now().UnixNano())) //nolint
 	return min + rand.Int63n(max-min)
 }
 
-// RandInt32 指定范围内的随机数字，max必须大于min。
+// RandInt32 指定范围内的随机数字，max必须大于min.
 func RandInt32(min, max int32) int32 {
 	rand.Seed(rand.Int63n(time.Now().UnixNano()))
 	return min + rand.Int31n(max-min)
 }
 
-// RandInt 指定范围内的随机数字
+// RandInt 指定范围内的随机数字.
 func RandInt(min, max int) int {
 	rand.Seed(rand.Int63n(time.Now().UnixNano()))
 	return min + rand.Intn(max-min)
 }
 
-// RandInts 生成指定范围int类型数组
+// RandInts 生成指定范围int类型数组.
 func RandInts(from, to, size int) []int {
 	if to-from < size {
 		size = to - from
@@ -45,9 +45,9 @@ func RandInts(from, to, size int) []int {
 	return ret
 }
 
-//======================================================================================================================
+// =======================================================================================================================
 
-// RandLower 指定长度的随机小写字母
+// RandLower 指定长度的随机小写字母.
 func RandLower(l int) string {
 	var result bytes.Buffer
 	var temp string
@@ -63,7 +63,7 @@ func RandLower(l int) string {
 	return result.String()
 }
 
-// RandUpper 指定长度的随机大写字母
+// RandUpper 指定长度的随机大写字母.
 func RandUpper(l int) string {
 	var result bytes.Buffer
 	var temp string
@@ -79,9 +79,9 @@ func RandUpper(l int) string {
 	return result.String()
 }
 
-//======================================================================================================================
+// ======================================================================================================================
 
-//https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
 const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
@@ -91,17 +91,18 @@ const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 var src = rand.NewSource(time.Now().UnixNano())
 
-// RandBytes 生成随机长度字节
+// RandBytes 生成随机长度字节.
 func RandBytes(length int) []byte {
-	var randomBytes = make([]byte, length)
-	_, err := rand.Read(randomBytes)
+	randomBytes := make([]byte, length)
+	var err error
+	_, err = rand.Read(randomBytes)
 	if err != nil {
 		log.Fatal("Unable to generate random bytes")
 	}
 	return randomBytes
 }
 
-// RandAlphaString 生成随机长度字母
+// RandAlphaString 生成随机长度字母.
 // Deprecated
 func RandAlphaString(length int) string {
 	result := make([]byte, length)
@@ -118,7 +119,7 @@ func RandAlphaString(length int) string {
 	return string(result)
 }
 
-// RandString 生成随机长度字符串,推荐使用。
+// RandString 生成随机长度字符串,推荐使用.
 func RandString(n int) string {
 	b := make([]byte, n)
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!

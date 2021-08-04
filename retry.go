@@ -1,6 +1,6 @@
 package gone
 
-//copy from github.com/Songmu/retry
+// copy from github.com/Songmu/retry
 
 import (
 	"context"
