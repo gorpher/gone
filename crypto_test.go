@@ -17,6 +17,25 @@ import (
 
 var licenseStr = "需要签名的字符串"
 
+func TestBase64(t *testing.T) {
+	bytes := []byte(licenseStr)
+	encode := Base64StdEncode(bytes)
+	decode, err := Base64StdDecode(encode)
+	if err != nil {
+		t.Fatal("Base64StdDecode error")
+	}
+	if !bytes2.Equal(decode, bytes) {
+		t.Fatalf("Base64StdEncode error: want is %s, but acutal is %s", bytes, decode)
+	}
+	encode = Base64URLEncode(bytes)
+	decode, err = Base64URLDecode(encode)
+	if err != nil {
+		t.Fatal("Base64StdDecode error")
+	}
+	if !bytes2.Equal(decode, bytes) {
+		t.Fatalf("Base64StdDecode error: want is %s, but acutal is %s", bytes, decode)
+	}
+}
 func TestSignBySM2Bytes(t *testing.T) {
 	pkStr, pbkStr, err := GenerateBase64Key(M2, PKCS1)
 	if err != nil {
@@ -173,27 +192,27 @@ mNGQxhmlSfLNpw/1AgMBAAE=
 )
 
 func TestDecodePemHexBase64(t *testing.T) {
-	_, err := DecodePemHexBase64(PrivateKeyPemStr)
+	_, err := DecodePemHexBase64([]byte(PrivateKeyPemStr))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = DecodePemHexBase64(PrivateKeyBase64Str)
+	_, err = DecodePemHexBase64([]byte(PrivateKeyBase64Str))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = DecodePemHexBase64(PrivateKeyHexStr)
+	_, err = DecodePemHexBase64([]byte(PrivateKeyHexStr))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = DecodePemHexBase64(PublicKeyPemStr)
+	_, err = DecodePemHexBase64([]byte(PublicKeyPemStr))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = DecodePemHexBase64(PublicKeyBase64Str)
+	_, err = DecodePemHexBase64([]byte(PublicKeyBase64Str))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = DecodePemHexBase64(PublicKeyHexStr)
+	_, err = DecodePemHexBase64([]byte(PublicKeyHexStr))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +225,7 @@ func TestParsePublicKey(t *testing.T) {
 	}
 	// pkcs1 解析
 	key := x509.MarshalPKCS1PublicKey(&(priKey.PublicKey))
-	_, err = ParsePublicKey(key)
+	_, err = ParseRsaPublicKey(key)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -221,11 +240,11 @@ func TestParsePublicKey(t *testing.T) {
 		t.Fatal(err)
 	}
 	// 自己的组合解析
-	pbkBytes, err = DecodePemHexBase64(PublicKeyPemStr)
+	pbkBytes, err = DecodePemHexBase64([]byte(PublicKeyPemStr))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ParsePublicKey(pbkBytes)
+	_, err = ParseRsaPublicKey(pbkBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +257,7 @@ func TestParsePrivateKey(t *testing.T) {
 	}
 
 	// pkcs1 解析
-	_, err = ParsePrivateKey(x509.MarshalPKCS1PrivateKey(priKey))
+	_, err = ParseRsaPrivateKey(x509.MarshalPKCS1PrivateKey(priKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -252,11 +271,11 @@ func TestParsePrivateKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pkBytes, err = DecodePemHexBase64(PrivateKeyPemStr)
+	pkBytes, err = DecodePemHexBase64([]byte(PrivateKeyPemStr))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ParsePrivateKey(pkBytes)
+	_, err = ParseRsaPrivateKey(pkBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,25 +284,11 @@ func TestParsePrivateKey(t *testing.T) {
 func TestRsaPublicEncrypt(t *testing.T) {
 	// 每次加密的字节数，不能超过密钥的长度值减去11,而每次加密得到的密文长度，却恰恰是密钥的长度
 	textBytes := []byte(testRandStr(100))
-	encrypt, err := RsaPublicEncrypt(PublicKeyPemStr, textBytes)
+	encrypt, err := RsaPublicEncrypt([]byte(PublicKeyPemStr), textBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decryptBytes, err := RsaPrivateDecrypt(PrivateKeyPemStr, encrypt)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(decryptBytes) != len(textBytes) {
-		t.Error("error")
-	}
-	if string(decryptBytes) != string(textBytes) {
-		t.Error("error")
-	}
-	encrypt, err = RsaPublicEncrypt(PublicKeyBase64Str, textBytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	decryptBytes, err = RsaPrivateDecrypt(PrivateKeyBase64Str, encrypt)
+	decryptBytes, err := RsaPrivateDecrypt([]byte(PrivateKeyPemStr), encrypt)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,11 +298,25 @@ func TestRsaPublicEncrypt(t *testing.T) {
 	if string(decryptBytes) != string(textBytes) {
 		t.Error("error")
 	}
-	encrypt, err = RsaPublicEncrypt(PublicKeyHexStr, textBytes)
+	encrypt, err = RsaPublicEncrypt([]byte(PublicKeyBase64Str), textBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decryptBytes, err = RsaPrivateDecrypt(PrivateKeyHexStr, encrypt)
+	decryptBytes, err = RsaPrivateDecrypt([]byte(PrivateKeyBase64Str), encrypt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(decryptBytes) != len(textBytes) {
+		t.Error("error")
+	}
+	if string(decryptBytes) != string(textBytes) {
+		t.Error("error")
+	}
+	encrypt, err = RsaPublicEncrypt([]byte(PublicKeyHexStr), textBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decryptBytes, err = RsaPrivateDecrypt([]byte(PrivateKeyHexStr), encrypt)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -355,7 +374,7 @@ func TestEncryptByRSABytes(t *testing.T) {
 	}
 	var pi interface{}
 	var ok bool
-	pi, err = x509.ParsePKCS8PrivateKey(pkBlock.Bytes)
+	pi, err = x509.ParsePKCS1PrivateKey(pkBlock.Bytes)
 	if err != nil {
 		t.Error(err)
 		return
@@ -381,27 +400,39 @@ func TestEncryptByRSABytes(t *testing.T) {
 }
 
 func TestGenerateSSHKey(t *testing.T) {
-	// var publicKey *rsa.PublicKey
-	// var privateKey *rsa.PrivateKey
-	// var pkBytes []byte
+	var publicKey ssh.PublicKey
+	var pkBytes []byte
 	var pbkBytes []byte
 	var err error
-	_, pbkBytes, err = GenerateSSHKey(RSA2048)
+	pkBytes, pbkBytes, err = GenerateSSHKey(RSA2048)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 	key, _, _, _, err := ssh.ParseAuthorizedKey(pbkBytes)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 	if key == nil {
-		t.Error("key not found")
+		t.Fatal("key not found")
 	}
-	_, err = ssh.ParsePublicKey(key.Marshal())
+	// 更多的例子，请查看。
+	// golang.org/x/crypto/ssh/testdata_test.go:26
+	// golang.org/x/crypto/ssh//keys_test.go:577
+	publicKey, err = ssh.ParsePublicKey(key.Marshal())
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
+	}
+	signer, err := ssh.ParsePrivateKey(pkBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data := []byte("some message")
+	signature, err := signer.Sign(rand.Reader, data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = publicKey.Verify(data, signature)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
