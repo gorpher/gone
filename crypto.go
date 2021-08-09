@@ -448,11 +448,6 @@ func ParseRsaPublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 		return publicKey, nil
 	}
 	err = nil //nolint
-	//这里不在使用pem解析，入参直接是derBytes类型
-	//block, _ := pem.Decode(derBytes)
-	//if block == nil {
-	//	return nil, errors.New("unable to decode publicKey to request")
-	//}
 
 	pub, err = x509.ParsePKIXPublicKey(derBytes)
 	if err != nil {
@@ -491,11 +486,6 @@ func ParseRsaPrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error)
 	if err == nil {
 		return privateKey, nil
 	}
-	// 这里不在使用pem解析，入参直接是derBytes类型
-	//block, _ := pem.Decode(derBytes)
-	//if block == nil {
-	//	return nil, errors.New("unable to decode privateKey to request")
-	//}
 	err = nil // nolint
 	pk, err = x509.ParsePKCS8PrivateKey(derBytes)
 	if err != nil {
