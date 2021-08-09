@@ -2,6 +2,7 @@ package gone
 
 import (
 	"bytes"
+	rnd "crypto/rand"
 	"log"
 	"math/rand"
 	"time"
@@ -95,7 +96,7 @@ var src = rand.NewSource(time.Now().UnixNano())
 func RandBytes(length int) []byte {
 	randomBytes := make([]byte, length)
 	var err error
-	_, err = rand.Read(randomBytes)
+	_, err = rnd.Read(randomBytes)
 	if err != nil {
 		log.Fatal("Unable to generate random bytes")
 	}

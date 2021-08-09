@@ -3,6 +3,8 @@ package gone
 import (
 	"bytes"
 	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -53,6 +55,7 @@ func GenerateBase64Key(secretLength SecretKeyLengthType,
 		if err != nil {
 			return "", "", err
 		}
+
 		return base64.RawURLEncoding.EncodeToString(privateKeyBytes),
 			base64.RawURLEncoding.EncodeToString(publicKeyBytes), nil
 	}
@@ -81,7 +84,7 @@ func GenerateBase64Key(secretLength SecretKeyLengthType,
 	return "", "", err
 }
 
-// GenerateRSAKeyToMemory 生成PEM格式RSA公私钥，返回字节格式.
+// GenerateRSAKeyToMemory 生成PEM格式PKCS1的RSA公私钥，返回字节格式.
 func GenerateRSAKeyToMemory(bits RSABit) (privateBytes []byte, publicBytes []byte, err error) {
 	privateBuffer := bytes.Buffer{}
 	publicBuffer := bytes.Buffer{}
@@ -94,24 +97,19 @@ func GenerateRSAKeyToMemory(bits RSABit) (privateBytes []byte, publicBytes []byt
 	return privateBytes, publicBytes, err
 }
 
-// GenerateRSAKey 生成PEM格式RSA公私钥，写入到io.Writer中.
+// GenerateRSAKey 生成PEM格式PKCS1的RSA公私钥，写入到io.Writer中.
 func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
 	var priKey *rsa.PrivateKey
-	var pkBytes []byte
 	var pbkBytes []byte
 	var err error
 	priKey, err = rsa.GenerateKey(rand.Reader, int(bits))
 	if err != nil {
 		return err
 	}
-	pkBytes, err = x509.MarshalPKCS8PrivateKey(priKey)
-	if err != nil {
-		return err
-	}
 	pbkBytes = x509.MarshalPKCS1PublicKey(&(priKey.PublicKey))
 	err = pem.Encode(privateWriter, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: pkBytes,
+		Bytes: x509.MarshalPKCS1PrivateKey(priKey),
 	})
 	if err != nil {
 		return err
@@ -120,6 +118,52 @@ func GenerateRSAKey(privateWriter, publicWriter io.Writer, bits RSABit) error {
 		Type:  "PUBLIC KEY",
 		Bytes: pbkBytes,
 	})
+}
+
+// GenerateECDSAKey 生成PEM格式ECDSA公私钥，写入到io.Writer中.
+func GenerateECDSAKey(privateWriter, publicWriter io.Writer, c elliptic.Curve) error {
+	var (
+		pk       *ecdsa.PrivateKey
+		pkBytes  []byte
+		pubBytes []byte
+		err      error
+	)
+	pk, err = ecdsa.GenerateKey(c, rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+	pkBytes, err = x509.MarshalECPrivateKey(pk)
+	if err != nil {
+		return err
+	}
+	err = pem.Encode(privateWriter, &pem.Block{
+		Type:  "ECD PRIVATE KEY",
+		Bytes: pkBytes,
+	})
+	if err != nil {
+		return err
+	}
+	pubBytes, err = x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	if err != nil {
+		return err
+	}
+	return pem.Encode(publicWriter, &pem.Block{
+		Type:  "ECD PUBLIC KEY",
+		Bytes: pubBytes,
+	})
+}
+
+// GenerateECDSAKeyToMemory 生成PEM格式ECDSA公私钥，返回字节格式.
+func GenerateECDSAKeyToMemory(c elliptic.Curve) (privateBytes []byte, publicBytes []byte, err error) {
+	privateBuffer := bytes.Buffer{}
+	publicBuffer := bytes.Buffer{}
+	err = GenerateECDSAKey(&privateBuffer, &publicBuffer, c)
+	if err != nil {
+		return privateBytes, publicBytes, err
+	}
+	privateBytes = privateBuffer.Bytes()
+	publicBytes = publicBuffer.Bytes()
+	return privateBytes, publicBytes, err
 }
 
 // GenerateSSHKey 生成ssh密钥队.
@@ -133,9 +177,11 @@ func GenerateSSHKey(bits RSABit) (pkBytes []byte, pbkBytes []byte, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	// golang.org/x/crypto/ssh/keys.go:1129
+	// PKCS8 使用pem编码使用PRIVATE KEY作为类型
 	pkBytes = pem.EncodeToMemory(&pem.Block{
 		Bytes: pkBytes,
-		Type:  "RSA PRIVATE KEY",
+		Type:  "PRIVATE KEY",
 	})
 	publicKey, err := ssh.NewPublicKey(&(priKey.PublicKey))
 	if err != nil {
@@ -375,24 +421,24 @@ func DecryptByRSA(privateKey *rsa.PrivateKey, ciphertext []byte) ([]byte, error)
 }
 
 // RsaPublicEncrypt Rsa公钥加密，参数publicKeyStr必须是hex、base64或者是pem编码.
-func RsaPublicEncrypt(publicKeyStr string, textBytes []byte) ([]byte, error) {
+func RsaPublicEncrypt(publicKeyBytes, textBytes []byte) ([]byte, error) {
 	var (
 		err       error
 		publicKey *rsa.PublicKey
 	)
-	publicKeyBytes, err := DecodePemHexBase64(publicKeyStr)
+	publicKeyBytes, err = DecodePemHexBase64(publicKeyBytes)
 	if err != nil {
 		return nil, err
 	}
-	publicKey, err = ParsePublicKey(publicKeyBytes)
+	publicKey, err = ParseRsaPublicKey(publicKeyBytes)
 	if err != nil {
 		return nil, err
 	}
 	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, textBytes)
 }
 
-// ParsePublicKey 解析公钥，derBytes可以使用DecodePemHexBase64函数获取.
-func ParsePublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
+// ParseRsaPublicKey 解析公钥，derBytes可以使用DecodePemHexBase64函数获取.
+func ParseRsaPublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 	var (
 		pub interface{}
 		ok  bool
@@ -420,21 +466,21 @@ func ParsePublicKey(derBytes []byte) (publicKey *rsa.PublicKey, err error) {
 }
 
 // RsaPrivateDecrypt 解析rsa私钥，参数privateKeyStr必须是hex、base64或者是pem编码.
-func RsaPrivateDecrypt(privateKeyStr string, cipherBytes []byte) (textBytes []byte, err error) {
+func RsaPrivateDecrypt(privateKeyBytes, cipherBytes []byte) (textBytes []byte, err error) {
 	var privateKey *rsa.PrivateKey
-	derBytes, err := DecodePemHexBase64(privateKeyStr)
+	derBytes, err := DecodePemHexBase64(privateKeyBytes)
 	if err != nil {
 		return nil, err
 	}
-	privateKey, err = ParsePrivateKey(derBytes)
+	privateKey, err = ParseRsaPrivateKey(derBytes)
 	if err != nil {
 		return nil, err
 	}
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, cipherBytes)
 }
 
-// ParsePrivateKey 解析私钥，derBytes可以使用DecodePemHexBase64函数获取.
-func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
+// ParseRsaPrivateKey 解析私钥，derBytes可以使用DecodePemHexBase64函数获取.
+func ParseRsaPrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	var (
 		pk interface{}
 		ok bool
@@ -462,20 +508,23 @@ func ParsePrivateKey(derBytes []byte) (privateKey *rsa.PrivateKey, err error) {
 	return privateKey, nil
 }
 
+var pemStart = []byte("\n-----BEGIN ")
+
 // DecodePemHexBase64 解析pem或者hex或者base64编码成der编码.
-func DecodePemHexBase64(keyStr string) ([]byte, error) {
-	if strings.Contains(keyStr, "RSA PRIVATE KEY") ||
-		strings.Contains(keyStr, "PUBLIC KEY") {
-		block, _ := pem.Decode([]byte(keyStr))
+func DecodePemHexBase64(data []byte) ([]byte, error) {
+	if bytes.HasPrefix(data, pemStart[1:]) ||
+		bytes.HasPrefix(data, pemStart) {
+		block, _ := pem.Decode(data)
 		if block == nil {
 			return nil, errors.New("unable to decode publicKey to request")
 		}
 		return block.Bytes, nil
 	}
-	derBytes, err := hex.DecodeString(keyStr)
+	decoded := make([]byte, hex.DecodedLen(len(data)))
+	b, err := hex.Decode(decoded, data)
 	// if parse ok return derBytes
 	if err == nil {
-		return derBytes, nil
+		return decoded[:b], nil
 	}
-	return base64.StdEncoding.DecodeString(keyStr)
+	return Base64StdDecode(data)
 }

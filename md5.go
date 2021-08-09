@@ -2,7 +2,7 @@ package gone
 
 import (
 	"crypto/hmac"
-	"crypto/md5"
+	"crypto/md5" // #nosec
 	"encoding/hex"
 	"hash"
 )
