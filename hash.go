@@ -21,7 +21,7 @@ hmac可以与基本hash算法进行组合：hmac_sha1 hmac_sha224 hmac_sha256 hm
 
 // MD5 md5摘要算法,可以加盐,参数salt是多参数,实现多态的行为.
 func MD5(str []byte, salt ...[]byte) string {
-	m5 := md5.New()
+	m5 := md5.New() // nolint
 	m5.Write(str)
 	if len(salt) > 0 {
 		m5.Write(salt[0])
@@ -40,9 +40,9 @@ func HMacMD5(data []byte, salt ...[]byte) string {
 	if len(s) > 0 {
 		h = hmac.New(md5.New, s)
 	} else {
-		h = md5.New() // #gosec
+		h = md5.New() // nolint
 	}
-	h.Write(data) // #gosec
+	h.Write(data)
 	return hex.EncodeToString(h.Sum(nil))
 }
 

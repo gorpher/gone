@@ -5,7 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/rc4"
+	"crypto/rc4" // nolint
 	"errors"
 	"fmt"
 	"io"
@@ -101,7 +101,7 @@ func BlockEncrypt(block cipher.Block, mode BlockStreamMode, value []byte) ([]byt
 	case OFB:
 		stream = cipher.NewOFB(block, iv)
 	case RC4:
-		stream, err = rc4.NewCipher(iv)
+		stream, err = rc4.NewCipher(iv) // nolint
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +129,7 @@ func BlockDecrypt(block cipher.Block, mode BlockStreamMode, value []byte) ([]byt
 		case OFB:
 			stream = cipher.NewOFB(block, iv)
 		case RC4:
-			stream, err = rc4.NewCipher(iv)
+			stream, err = rc4.NewCipher(iv) // nolint
 			if err != nil {
 				return nil, err
 			}

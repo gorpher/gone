@@ -2,11 +2,13 @@ package gone
 
 import (
 	"bytes"
+	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 )
 
-func TestSecureCookie(t *testing.T) {
+func TestCookieCodec(t *testing.T) {
 	var tests []Codec
 	for i := 0; i < 10; i++ {
 		tests = append(tests, NewCookieCodec([]byte(RandString(8)), RandBytes(16)))
@@ -43,6 +45,34 @@ func TestSecureCookie(t *testing.T) {
 			t.Fatalf("Expected %v, got %v.", value, dst)
 		}
 	}
+}
+
+func TestJwtCodec(t *testing.T) {
+	codec := NewJwtCodec("HS256")
+	v, err := json.Marshal(Payload{
+		Subject:        "access_token",
+		Issuer:         "gorpher",
+		ExpirationTime: &Time{time.Unix(1628603180, 0)},
+		NotBefore:      &Time{time.Unix(1628603180, 0)},
+		IssuedAt:       &Time{time.Unix(1628603180, 0)},
+		Audience:       Audience{"https://www.gorpher.site/"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := []byte("123456")
+	t.Log(string(key))
+	encode, err := codec.Encode(key, v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(encode))
+
+	decode, err := codec.Decode(key, encode)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(decode))
 }
 
 func equalMap(a, b map[string]interface{}) bool {
