@@ -1,6 +1,6 @@
 ### gone
 
-gone是一个简单、方便、小巧好用的工具包.
+gone is a simple, convenient, small and easy-to-use tool kit
 
 [![GoDoc](https://pkg.go.dev/badge/github.com/gorpher/gone)](https://pkg.go.dev/github.com/gorpher/gone)
 [![Build Status](https://www.travis-ci.com/gorpher/gone.svg?branch=main&status=passed)](https://www.travis-ci.com/gorpher/gone)
