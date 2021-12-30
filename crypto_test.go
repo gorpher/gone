@@ -27,6 +27,16 @@ func TestBase64(t *testing.T) {
 	if !bytes2.Equal(decode, bytes) {
 		t.Fatalf("Base64StdEncode error: want is %s, but acutal is %s", bytes, decode)
 	}
+
+	encode = Base64RawStdEncode(bytes)
+	decode, err = Base64RawStdDecode(encode)
+	if err != nil {
+		t.Fatal("Base64RawStdDecode error")
+	}
+	if !bytes2.Equal(decode, bytes) {
+		t.Fatalf("Base64RawStdDecode error: want is %s, but acutal is %s", bytes, decode)
+	}
+
 	encode = Base64URLEncode(bytes)
 	decode, err = Base64URLDecode(encode)
 	if err != nil {
@@ -35,6 +45,16 @@ func TestBase64(t *testing.T) {
 	if !bytes2.Equal(decode, bytes) {
 		t.Fatalf("Base64StdDecode error: want is %s, but acutal is %s", bytes, decode)
 	}
+
+	encode = Base64RawURLEncode(bytes)
+	decode, err = Base64RawURLDecode(encode)
+	if err != nil {
+		t.Fatal("Base64RawURLDecode error")
+	}
+	if !bytes2.Equal(decode, bytes) {
+		t.Fatalf("Base64RawURLDecode error: want is %s, but acutal is %s", bytes, decode)
+	}
+
 }
 func TestSignBySM2Bytes(t *testing.T) {
 	pkStr, pbkStr, err := GenerateBase64Key(M2, PKCS1)
