@@ -5,6 +5,46 @@ import (
 	"testing"
 )
 
+func TestSignBySM2Bytes(t *testing.T) {
+	pkStr, pbkStr, err := GenerateBase64Key(M2, PKCS1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	fmt.Println(pkStr, "\n", pbkStr)
+
+	signStr, err := SignBySM2Bytes([]byte(pkStr), []byte(licenseStr))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	rsaStr, valid, err := VerifyBySM2(pbkStr, signStr)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(rsaStr, valid)
+
+	//=============================================================================
+	pkStr, pbkStr, err = GenerateBase64Key(M2, PKCS8)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	fmt.Println(pkStr, "\n", pbkStr)
+	signStr, err = SignBySM2Bytes([]byte(pkStr), []byte(licenseStr))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	rsaStr, valid, err = VerifyBySM2(pbkStr, signStr)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(rsaStr, valid)
+}
+
 func TestSM2PublicEncrypt(t *testing.T) {
 	pkStr, pbkStr, err := GenerateBase64Key(M2, PKCS1)
 	if err != nil {
