@@ -14,5 +14,7 @@ gone is a simple, convenient, small and easy-to-use tool kit
 - StrUtils and StrConv
 - AES Block Encrypt
 - Datetime Formate
+- Log
+- Script
 - Other
  
