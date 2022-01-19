@@ -1,0 +1,123 @@
+package script
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
+
+	"github.com/gorpher/gone/log"
+)
+
+const windows = "windows"
+
+func IsWindows() bool {
+	return windows == runtime.GOOS
+}
+
+func toEnvVarsList(envVarsAsMap map[string]string) []string {
+	var envVarsAsList []string
+	for key, value := range envVarsAsMap {
+		envVarsAsList = append(envVarsAsList, fmt.Sprintf("%s=%s", key, value))
+	}
+	return envVarsAsList
+}
+
+var ErrorForceKill = errors.New("force killed failed")
+
+type CmdOutput struct {
+	Stdout *bytes.Buffer
+	Stderr *bytes.Buffer
+}
+
+type Options struct {
+	CancelCtx  context.Context
+	Command    string
+	CliArgs    []string
+	BinPath    string
+	Env        map[string]string
+	ErrWriter  io.Writer
+	Stdin      io.Reader
+	WorkingDir string
+}
+
+const EnvVarTMP = "TMP"
+const EnvVarHome = "HOME"
+
+func Exec(opt *Options) (*CmdOutput, error) {
+	log.SetPrefix("Gone Script")
+	log.Msgf("Running command: %s %s", opt.Command, strings.Join(opt.CliArgs, " "))
+	out := &CmdOutput{Stdout: &bytes.Buffer{}, Stderr: &bytes.Buffer{}}
+	// 设置执行目录
+	if opt.BinPath == "" {
+		binary, err := exec.LookPath(opt.Command)
+		if err != nil {
+			return nil, err
+		}
+		opt.BinPath = binary
+	}
+
+	opt.Env[EnvVarTMP] = filepath.Clean(os.Getenv(EnvVarTMP))
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	opt.Env[EnvVarHome] = filepath.Join(home)
+
+	cmd := exec.Command(opt.BinPath, opt.CliArgs...) //nolint
+
+	if opt.Stdin == nil {
+		opt.Stdin = os.Stdin
+	}
+	cmd.Env = toEnvVarsList(opt.Env)
+
+	if opt.WorkingDir == "" {
+		opt.WorkingDir = home
+	}
+
+	cmd.Path = opt.BinPath
+	cmd.Dir = opt.WorkingDir
+	cmd.Dir = filepath.ToSlash(cmd.Dir)
+
+	if opt.ErrWriter != nil {
+		cmd.Stderr = io.MultiWriter(opt.ErrWriter, out.Stderr)
+	} else {
+		cmd.Stderr = out.Stderr
+	}
+	cmd.Stdout = out.Stdout
+
+	log.Msgf("Running command: %s %s at %s", opt.Command, strings.Join(opt.CliArgs, " "), opt.WorkingDir)
+	log.Msgf("Running command: %s env is %v", opt.Command, cmd.Env)
+	if err = cmd.Start(); err != nil {
+		return out, err
+	}
+	// 完成通道
+	finishCh := make(chan error, 1)
+	go func() {
+		cmdErr := cmd.Wait()
+		if cmdErr != nil {
+			finishCh <- cmdErr
+		}
+		finishCh <- nil
+	}()
+	select {
+	case err = <-finishCh:
+	case <-opt.CancelCtx.Done():
+		if IsWindows() && cmd.Process.Kill() != nil {
+			log.Error("force kill app failed")
+			err = ErrorForceKill
+			return out, err
+		}
+		if cmd.Process.Signal(os.Interrupt) != nil {
+			log.Error("force kill app failed, in ", runtime.GOOS)
+			err = ErrorForceKill
+		}
+	}
+	return out, err
+}
