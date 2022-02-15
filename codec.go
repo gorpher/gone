@@ -229,7 +229,7 @@ func jwtHS(alg string) (func(key []byte) hash.Hash, error) {
 			return hmac.New(crypto.SHA512.New, key)
 		}, nil
 	default:
-		return nil, errors.New("the algorithm is not supported")
+		return nil, fmt.Errorf("the %s algorithm is not supported", alg)
 	}
 }
 

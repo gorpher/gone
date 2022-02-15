@@ -2,8 +2,16 @@ package gone
 
 import (
 	bytes2 "bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
+	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	"golang.org/x/crypto/ssh"
@@ -187,4 +195,35 @@ func TestGenerateSSHKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestGenerateECDSAKeyToMemory(t *testing.T) {
+	privateBytes, publicBytes, err := GenerateECDSAKeyToMemory(elliptic.P256())
+	if err != nil {
+		t.Fatal(err)
+	}
+	block, _ := pem.Decode(privateBytes)
+	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pbkBlock, _ := pem.Decode(publicBytes)
+	pbk, err := x509.ParsePKIXPublicKey(pbkBlock.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	publicKey, ok := pbk.(*ecdsa.PublicKey)
+	if !ok {
+		t.Fatal(errors.New("ecdsa publicKey error"))
+	}
+
+	text := "hello world"
+	randSign := "12345678901234567"
+	hashText := sha256.Sum256([]byte(text))
+	r, s, err := ecdsa.Sign(strings.NewReader(randSign), privateKey, hashText[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := ecdsa.Verify(publicKey, hashText[:], r, s)
+	fmt.Println(b)
 }

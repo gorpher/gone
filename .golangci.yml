@@ -154,7 +154,7 @@ linters-settings:
 
   funlen:
     lines: 200
-    statements: 66
+    statements: 100
 
   gci:
     # put imports beginning with prefix after 3rd-party packages;
@@ -224,7 +224,7 @@ linters-settings:
 
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 30
+    min-complexity: 50
 
   godot:
     # comments to be checked: `declarations`, `toplevel`, or `all`
