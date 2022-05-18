@@ -40,6 +40,11 @@ func EncryptByAesCBC(origData, key, iv []byte) (encrypted []byte, err error) {
 
 // DecryptByAesCBC cbc模式解密.
 func DecryptByAesCBC(encrypted, key, iv []byte) (decrypted []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("DecryptByAesCBC failed")
+		}
+	}()
 	var block cipher.Block
 	block, err = aes.NewCipher(key) // 分组秘钥
 	if err != nil {
