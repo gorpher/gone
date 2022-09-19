@@ -29,6 +29,23 @@ func TestRandInt(t *testing.T) {
 	}
 }
 
+func FuzzRandInt(f *testing.F) {
+	testcases := [][]int{
+		{1, 2},
+		{0, 10},
+	}
+	for i := range testcases {
+		f.Add(testcases[i][0], testcases[i][1])
+	}
+	f.Fuzz(func(t *testing.T, orig []int) {
+		randInt := RandInt(orig[0], orig[1])
+		if randInt > orig[0] || randInt < orig[1] {
+			t.Errorf("RandInt(%d,%d)=%d", orig[0], orig[1], randInt)
+		}
+	})
+
+}
+
 func TestRandLowerAndUpper(t *testing.T) {
 	lower := RandLower(math.MaxInt16)
 	if len(lower) != math.MaxInt16 {
