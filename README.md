@@ -13,8 +13,13 @@ gone is a simple, convenient, small and easy-to-use tool kit
 - FileUtils
 - StrUtils and StrConv
 - AES Block Encrypt
-- Datetime Formate
+- Datetime Format
+- ID generator
+- HASH
+- Base64
 - Log
 - Script
+- File Uploader & File Receive
+- Retry
 - Other
  
