@@ -105,7 +105,7 @@ func SM2PublicEncrypt(publicKeyBytes, textBytes []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return sm2.Encrypt(publicKey, textBytes, rand.Reader)
+	return sm2.Encrypt(publicKey, textBytes, rand.Reader, sm2.C1C3C2)
 }
 
 // ParseSM2PublicKey 解析公钥，derBytes可以使用DecodePemHexBase64函数获取.
@@ -133,7 +133,7 @@ func ParseSM2PublicKey(derBytes []byte) (publicKey *sm2.PublicKey, err error) {
 
 // DecryptBySM2 使用SM2私钥解密.
 func DecryptBySM2(privateKey *sm2.PrivateKey, ciphertext []byte) ([]byte, error) {
-	return sm2.Decrypt(privateKey, ciphertext)
+	return sm2.Decrypt(privateKey, ciphertext, sm2.C1C3C2)
 }
 
 func DecryptBySM2Bytes(privateKey []byte, ciphertext []byte) (text []byte, err error) {
