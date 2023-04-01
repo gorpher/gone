@@ -92,7 +92,7 @@ const (
 
 func BlockEncrypt(block cipher.Block, mode BlockStreamMode, value []byte) ([]byte, error) {
 	size := block.BlockSize()
-	iv := make([]byte, size)
+	iv := make([]byte, size, len(value))
 	_, err := io.ReadFull(rand.Reader, iv)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,8 @@ func BlockEncrypt(block cipher.Block, mode BlockStreamMode, value []byte) ([]byt
 	encrypted := make([]byte, len(value))
 	stream.XORKeyStream(encrypted, value)
 	// 返回偏移量和密文
-	return append(iv, encrypted...), nil
+	iv = append(iv, encrypted...)
+	return iv, nil
 }
 
 func BlockDecrypt(block cipher.Block, mode BlockStreamMode, value []byte) ([]byte, error) {

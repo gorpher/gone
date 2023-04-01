@@ -122,24 +122,24 @@ func NewWithPrefix(out io.Writer, logLevel LogLevel, colorful bool, prefix strin
 }
 
 var (
-	Discard = New(ioutil.Discard, DebugLevel, false)
-	std     = New(os.Stderr, DebugLevel, true)
+	Discard       = New(ioutil.Discard, DebugLevel, false)
+	DefaultLogger = New(os.Stderr, DebugLevel, true)
 )
 
 func Info(s string, v ...interface{}) {
-	std.Info(s, v...)
+	DefaultLogger.Info(s, v...)
 }
 
 func Debug(s string, v ...interface{}) {
-	std.Debug(s, v...)
+	DefaultLogger.Debug(s, v...)
 }
 
 func Warn(s string, v ...interface{}) {
-	std.Warn(s, v...)
+	DefaultLogger.Warn(s, v...)
 }
 
 func Error(s string, v ...interface{}) {
-	std.Error(s, v...)
+	DefaultLogger.Error(s, v...)
 }
 
 func Msgf(s string, v ...interface{}) {
@@ -147,69 +147,69 @@ func Msgf(s string, v ...interface{}) {
 }
 
 func Msg(v ...interface{}) {
-	if std.logLevel >= InfoLevel {
+	if DefaultLogger.logLevel >= InfoLevel {
 		Print(v...)
 	}
 }
 
 // SetPrefix sets the output prefix for the standard logger.
 func SetPrefix(prefix string) {
-	std.prefix += "[" + prefix + "]  "
+	DefaultLogger.prefix += "[" + prefix + "]  "
 }
 
 // Print calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Print.
 func Print(v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprint(v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprint(v...)) // nolint
 }
 
 // Printf calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Printf.
 func Printf(format string, v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprintf(format, v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprintf(format, v...)) // nolint
 }
 
 // Println calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Println.
 func Println(v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprintln(v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprintln(v...)) // nolint
 }
 
 // Fatal is equivalent to Print() followed by a call to os.Exit(1).
 func Fatal(v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprint(v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprint(v...)) // nolint
 	os.Exit(1)
 }
 
 // Fatalf is equivalent to Printf() followed by a call to os.Exit(1).
 func Fatalf(format string, v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprintf(format, v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprintf(format, v...)) // nolint
 	os.Exit(1)
 }
 
 // Fatalln is equivalent to Println() followed by a call to os.Exit(1).
 func Fatalln(v ...interface{}) {
-	std.Logger.Output(2, fmt.Sprintln(v...))
+	DefaultLogger.Logger.Output(2, fmt.Sprintln(v...)) // nolint
 	os.Exit(1)
 }
 
 // Panic is equivalent to Print() followed by a call to panic().
 func Panic(v ...interface{}) {
 	s := fmt.Sprint(v...)
-	std.Logger.Output(2, s)
+	DefaultLogger.Logger.Output(2, s) // nolint
 	panic(s)
 }
 
 // Panicf is equivalent to Printf() followed by a call to panic().
 func Panicf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
-	std.Logger.Output(2, s)
+	DefaultLogger.Logger.Output(2, s) // nolint
 	panic(s)
 }
 
 // Panicln is equivalent to Println() followed by a call to panic().
 func Panicln(v ...interface{}) {
 	s := fmt.Sprintln(v...)
-	std.Logger.Output(2, s)
+	DefaultLogger.Logger.Output(2, s) // nolint
 	panic(s)
 }

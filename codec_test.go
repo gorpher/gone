@@ -74,19 +74,3 @@ func TestJwtCodec(t *testing.T) {
 	}
 	t.Log(string(decode))
 }
-
-func equalMap(a, b map[string]interface{}) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for k, v1 := range a {
-		v2, ok := b[k]
-		if !ok {
-			return false
-		}
-		if !reflect.DeepEqual(v1, v2) {
-			return false
-		}
-	}
-	return true
-}

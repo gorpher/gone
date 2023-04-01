@@ -22,9 +22,11 @@ func IsWindows() bool {
 }
 
 func toEnvVarsList(envVarsAsMap map[string]string) []string {
-	var envVarsAsList []string
+	var envVarsAsList = make([]string, len(envVarsAsMap))
+	var i int
 	for key, value := range envVarsAsMap {
-		envVarsAsList = append(envVarsAsList, fmt.Sprintf("%s=%s", key, value))
+		envVarsAsList[i] = fmt.Sprintf("%s=%s", key, value)
+		i += 1
 	}
 	return envVarsAsList
 }
@@ -68,7 +70,7 @@ func Exec(opt *Options) (*CmdOutput, error) {
 	if err != nil {
 		panic(err)
 	}
-	opt.Env[EnvVarHome] = filepath.Join(home)
+	opt.Env[EnvVarHome] = home
 
 	cmd := exec.Command(opt.BinPath, opt.CliArgs...) //nolint
 

@@ -1,7 +1,6 @@
 package gone
 
 import (
-	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -45,7 +44,7 @@ func (h *HTTPReceiveFile) String() string {
 		"FileMIME":       h.FileMIME,
 		"TotalSize":      h.TotalSize,
 	}
-	body, _ := json.Marshal(m)
+	body, _ := json.Marshal(m) // nolint
 	return string(body)
 }
 
@@ -115,7 +114,7 @@ func WithReceiveFileDstDir(dstDir string) ReceiveFileOption {
 func NewHttpReceiveFile(options ...ReceiveFileOption) func(r *http.Request) (HTTPReceiveFile, error) {
 	return func(r *http.Request) (HTTPReceiveFile, error) {
 		h := HTTPReceiveFile{
-			MaxReceiveSize: GB, //默认最大1G
+			MaxReceiveSize: GB,
 			FieldName:      "file",
 			DstDirMode:     os.ModePerm,
 			DstFileMode:    os.FileMode(0755),
@@ -133,7 +132,7 @@ func NewHttpReceiveFile(options ...ReceiveFileOption) func(r *http.Request) (HTT
 		if err != nil {
 			return h, err
 		}
-		defer srcFile.Close()
+		defer srcFile.Close() //nolint
 		h.fileHeader = info
 		h.DstFilename = info.Filename
 		for _, opt := range options {
@@ -164,7 +163,10 @@ func NewHttpReceiveFile(options ...ReceiveFileOption) func(r *http.Request) (HTT
 		if err != nil {
 			return h, err
 		}
-		tempFile.Close()
+		err = tempFile.Close()
+		if err != nil {
+			return h, err
+		}
 		h.Checksum = hex.EncodeToString(h.Hash.Sum(nil))
 		h.Hash.Reset()
 		err = os.Rename(tempFile.Name(), filepath.Join(h.DstDir, h.DstFilename))
@@ -177,7 +179,7 @@ func NewHttpReceiveFile(options ...ReceiveFileOption) func(r *http.Request) (HTT
 }
 
 func getSize(content io.Seeker) (int64, error) {
-	size, err := content.Seek(0, os.SEEK_END)
+	size, err := content.Seek(0, io.SeekEnd)
 	if err != nil {
 		return 0, err
 	}
@@ -186,47 +188,4 @@ func getSize(content io.Seeker) (int64, error) {
 		return 0, err
 	}
 	return size, nil
-}
-
-// HttpSendFile send http file
-func HttpSendFile(url, filePath string) error {
-	method := "POST"
-	payload := &bytes.Buffer{}
-	writer := multipart.NewWriter(payload)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	var partFile io.Writer
-	partFile, err = writer.CreateFormFile("file", filepath.Base(filePath))
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(partFile, file)
-	if err != nil {
-		return err
-	}
-	err = writer.Close()
-	if err != nil {
-		return err
-	}
-	client := &http.Client{}
-	var (
-		req *http.Request
-		res *http.Response
-	)
-	req, err = http.NewRequest(method, url, payload)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	res, err = client.Do(req)
-	if err != nil {
-		return err
-	}
-	if !(res.StatusCode == 200 || res.StatusCode == 204) {
-		return fmt.Errorf("invalid status code %d", res.StatusCode)
-	}
-	return err
 }

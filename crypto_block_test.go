@@ -9,11 +9,11 @@ import (
 
 	"github.com/tjfoc/gmsm/pkcs12"
 	"github.com/tjfoc/gmsm/sm4"
-	"golang.org/x/crypto/blowfish"
-	"golang.org/x/crypto/cast5"
-	"golang.org/x/crypto/tea"
-	"golang.org/x/crypto/twofish"
-	"golang.org/x/crypto/xtea"
+	"golang.org/x/crypto/blowfish" // nolint
+	"golang.org/x/crypto/cast5"    // nolint
+	"golang.org/x/crypto/tea"      // nolint
+	"golang.org/x/crypto/twofish"  // nolint
+	"golang.org/x/crypto/xtea"     // nolint
 )
 
 func TestAesEncryptCBC(t *testing.T) {

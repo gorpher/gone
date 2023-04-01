@@ -125,10 +125,10 @@ func FormatBinaryDecimal(value int64) string {
 // 6GB (6G is also valid) will return 6000000000.
 func ParseBytes(value string) (int64, error) {
 	i, err := ParseBinaryString(value)
-	if err == nil {
-		return i, err
+	if err != nil {
+		return ParseStringDecimal(value)
 	}
-	return ParseStringDecimal(value)
+	return i, nil
 }
 
 // ParseStringDecimal parses human readable bytes string to bytes integer.
@@ -172,26 +172,27 @@ func ParseBinaryString(value string) (i int64, err error) {
 	}
 	bytesString := parts[1]
 	multiple := strings.ToUpper(parts[2])
-	bytes, err := strconv.ParseFloat(bytesString, 64)
+	var byteVal float64
+	byteVal, err = strconv.ParseFloat(bytesString, 64)
 	if err != nil {
-		return
+		return 0, err
 	}
 
 	switch multiple {
 	case "KI", "KIB":
-		return int64(bytes * KiB), nil
+		return int64(byteVal * KiB), nil
 	case "MI", "MIB":
-		return int64(bytes * MiB), nil
+		return int64(byteVal * MiB), nil
 	case "GI", "GIB":
-		return int64(bytes * GiB), nil
+		return int64(byteVal * GiB), nil
 	case "TI", "TIB":
-		return int64(bytes * TiB), nil
+		return int64(byteVal * TiB), nil
 	case "PI", "PIB":
-		return int64(bytes * PiB), nil
+		return int64(byteVal * PiB), nil
 	case "EI", "EIB":
-		return int64(bytes * EiB), nil
+		return int64(byteVal * EiB), nil
 	default:
-		return int64(bytes), nil
+		return int64(byteVal), nil
 	}
 }
 

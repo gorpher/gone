@@ -196,7 +196,9 @@ func (a *Audience) UnmarshalJSON(b []byte) error {
 	case []interface{}:
 		aud := make(Audience, len(vv))
 		for i := range vv {
-			aud[i] = vv[i].(string)
+			if val, ok := vv[i].(string); ok {
+				aud[i] = val
+			}
 		}
 		*a = aud
 	}

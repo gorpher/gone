@@ -138,9 +138,6 @@ func VerifyJwtSignByRsa(ciphertext []byte, publicKey *rsa.PublicKey) (json.RawMe
 		return nil, err
 	}
 	var header Header
-	if err != nil {
-		return nil, err
-	}
 	err = json.Unmarshal(hb, &header)
 	if err != nil {
 		return nil, err
@@ -225,9 +222,6 @@ func VerifyJwtSignByEcdsa(ciphertext []byte, publicKey *ecdsa.PublicKey) (json.R
 		return nil, err
 	}
 	var header Header
-	if err != nil {
-		return nil, err
-	}
 	err = json.Unmarshal(hb, &header)
 	if err != nil {
 		return nil, err
@@ -281,9 +275,6 @@ func VerifyJwtSignByHmacHash(ciphertext, key []byte) (json.RawMessage, error) {
 	}
 
 	var header Header
-	if err != nil {
-		return nil, err
-	}
 	err = json.Unmarshal(hb, &header)
 	if err != nil {
 		return nil, err

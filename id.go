@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/google/uuid"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/rs/xid"
@@ -43,7 +43,7 @@ func (i *id) XID() xid.ID {
 }
 
 func (i *id) UUID4() uuid.UUID {
-	return uuid.NewV4()
+	return uuid.New()
 }
 
 func (i *id) SInt64() int64 {
@@ -59,7 +59,7 @@ func (i *id) XString() string {
 }
 
 func (i *id) UString() string {
-	return uuid.NewV4().String()
+	return uuid.New().String()
 }
 
 // RandString 最大64个字母.

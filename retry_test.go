@@ -2,6 +2,7 @@ package gone
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -50,7 +51,7 @@ func TestWithContext(t *testing.T) {
 		return fmt.Errorf("retry")
 	})
 
-	if err != context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		t.Errorf("error should be %s, %s", context.DeadlineExceeded, err)
 	}
 
