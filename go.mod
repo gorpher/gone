@@ -1,6 +1,6 @@
 module github.com/gorpher/gone
 
-go 1.18
+go 1.22
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0

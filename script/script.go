@@ -6,13 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/gorpher/gone/log"
 )
 
 const windows = "windows"
@@ -53,8 +52,7 @@ const EnvVarTMP = "TMP"
 const EnvVarHome = "HOME"
 
 func Exec(opt *Options) (*CmdOutput, error) {
-	log.SetPrefix("Gone Script")
-	log.Msgf("Running command: %s %s", opt.Command, strings.Join(opt.CliArgs, " "))
+	logger.Debug(fmt.Sprintf("Running command: %s %s", opt.Command, strings.Join(opt.CliArgs, " ")))
 	out := &CmdOutput{Stdout: &bytes.Buffer{}, Stderr: &bytes.Buffer{}}
 	// 设置执行目录
 	if opt.BinPath == "" {
@@ -94,8 +92,8 @@ func Exec(opt *Options) (*CmdOutput, error) {
 	}
 	cmd.Stdout = out.Stdout
 
-	log.Msgf("Running command: %s %s at %s", opt.Command, strings.Join(opt.CliArgs, " "), opt.WorkingDir)
-	log.Msgf("Running command: %s env is %v", opt.Command, cmd.Env)
+	logger.Debug(fmt.Sprintf("Running command: %s %s at %s", opt.Command, strings.Join(opt.CliArgs, " "), opt.WorkingDir))
+	logger.Debug(fmt.Sprintf("Running command: %s env is %v", opt.Command, cmd.Env))
 	if err = cmd.Start(); err != nil {
 		return out, err
 	}
@@ -112,14 +110,29 @@ func Exec(opt *Options) (*CmdOutput, error) {
 	case err = <-finishCh:
 	case <-opt.CancelCtx.Done():
 		if IsWindows() && cmd.Process.Kill() != nil {
-			log.Error("force kill app failed")
+			logger.Error("force kill app failed")
 			err = ErrorForceKill
 			return out, err
 		}
 		if cmd.Process.Signal(os.Interrupt) != nil {
-			log.Error("force kill app failed, in ", runtime.GOOS)
+			logger.Error(fmt.Sprint("force kill app failed, in ", runtime.GOOS))
 			err = ErrorForceKill
 		}
 	}
 	return out, err
+}
+
+var logger *slog.Logger
+
+func init() {
+	logger = slog.New(
+		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+				if a.Key == slog.TimeKey && len(groups) == 0 {
+					return slog.Attr{}
+				}
+				return a
+			},
+		}),
+	).WithGroup("Gone Script")
 }
