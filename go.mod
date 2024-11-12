@@ -13,7 +13,6 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.3.1
 	github.com/tjfoc/gmsm v1.4.1
-	go.etcd.io/bbolt v1.3.11
 	golang.org/x/crypto v0.17.0
 )
 
