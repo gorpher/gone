@@ -1,6 +1,6 @@
 run:
   concurrency: 4
-  go: '1.18'
+  go: '1.20'
   timeout: 1m
   issues-exit-code: 1
   tests: true
@@ -77,7 +77,6 @@ linters:
     - unused
     - contextcheck
     - bodyclose
-    - varcheck
     - gosec
     - exhaustive
     - sqlclosecheck
