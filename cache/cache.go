@@ -52,8 +52,6 @@ func WithRedisCmdable(redisCmdable redis.Cmdable) OptFunc {
 
 var _ Cache = (*MemoryCache)(nil)
 
-var _ Cache = (*BoltCache)(nil)
-
 func NewCache(opts ...OptFunc) (Cache, error) {
 	var options = new(Options)
 	options.cacheDir = ".cache"
