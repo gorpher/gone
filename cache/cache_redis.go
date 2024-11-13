@@ -18,7 +18,7 @@ type RedisOptions struct {
 	DB       int      `json:"db" yaml:"db"`
 }
 
-func NewRedisCache(options *RedisOptions) (Cache, error) {
+func NewRedisCache(options *RedisOptions) (*RedisCache, error) {
 	var client redis.Cmdable
 	if len(options.Address) == 1 {
 		client = redis.NewClient(&redis.Options{
@@ -43,7 +43,7 @@ func NewRedisCache(options *RedisOptions) (Cache, error) {
 	return NewRedisCacheDB(client)
 }
 
-func NewRedisCacheDB(client redis.Cmdable) (Cache, error) {
+func NewRedisCacheDB(client redis.Cmdable) (*RedisCache, error) {
 	return &RedisCache{client: client}, nil
 }
 

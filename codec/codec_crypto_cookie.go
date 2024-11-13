@@ -5,7 +5,7 @@ import (
 	"crypto/aes"
 	"fmt"
 	"github.com/gorpher/gone/core"
-	crypto2 "github.com/gorpher/gone/crypto"
+	crypto2 "github.com/gorpher/gone/cryptoutil"
 	"strconv"
 	"time"
 )

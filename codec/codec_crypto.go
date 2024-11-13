@@ -3,7 +3,7 @@ package codec
 import (
 	"crypto/cipher"
 	"errors"
-	crypto2 "github.com/gorpher/gone/crypto"
+	crypto2 "github.com/gorpher/gone/cryptoutil"
 )
 
 type CryptoCodec interface {

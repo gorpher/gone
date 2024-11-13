@@ -3,6 +3,7 @@ package authed
 import (
 	"github.com/gorpher/gone/codec"
 	"github.com/gorpher/gone/core"
+	"strconv"
 	"time"
 )
 
@@ -20,7 +21,8 @@ type UserSession struct {
 	ClientName string         `json:"client_name"`
 	Username   string         `json:"username"`
 	Nickname   string         `json:"nickname"`
-	ID         string         `json:"id"`
+	ID         string         `json:"id"`         // 会话ID
+	Uid        string         `json:"uid"`        // 用户ID
 	ExpiredAt  int64          `json:"expired_at"` // 单位秒，时间戳
 	Roles      []string       `json:"roles,omitempty"`
 	Scopes     []string       `json:"scopes,omitempty"`
@@ -28,6 +30,14 @@ type UserSession struct {
 	token      string
 }
 
+func (u *UserSession) GetIDInt64() int64 {
+	id, _ := strconv.ParseInt(u.ID, 10, 64) //nolint
+	return id
+}
+func (u *UserSession) GetUIDInt64() int64 {
+	id, _ := strconv.ParseInt(u.Uid, 10, 64) //nolint
+	return id
+}
 func (u *UserSession) GetToken() string {
 	return u.token
 }

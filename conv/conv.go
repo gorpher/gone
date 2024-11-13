@@ -3,6 +3,7 @@ package conv
 import (
 	"bytes"
 	"strings"
+	"unicode"
 	"unsafe"
 )
 
@@ -47,4 +48,12 @@ func StringReplaceIgnoreCase(text, source, target string) string {
 	}
 	buf.WriteString(text[end:])
 	return buf.String()
+}
+func IsDigitOrLetter(s string) bool {
+	for _, r := range s {
+		if !(unicode.IsDigit(r) || unicode.IsLetter(r)) {
+			return false
+		}
+	}
+	return true
 }

@@ -25,7 +25,7 @@ type Authed struct {
 	cryptoKey   []byte
 	cryptoCodec codec.CryptoCodec
 	objectCodec codec.ObjectCodec
-	store       *cache.MemoryCache
+	store       cache.Cache
 }
 
 type OptFunc func(session *Authed) *Authed
@@ -43,8 +43,8 @@ func WithJwtCode(alg string) OptFunc {
 	}
 }
 
-// WithCryptKey 初始化加密jwt的hs512的密钥key
-func WithCryptKey(key []byte) OptFunc {
+// WithCryptoKey 初始化加密jwt的hs512的密钥key
+func WithCryptoKey(key []byte) OptFunc {
 	return func(s *Authed) *Authed {
 		s.cryptoKey = key
 		return s
@@ -54,6 +54,18 @@ func WithCryptKey(key []byte) OptFunc {
 func WithCookieName(cookieName string) OptFunc {
 	return func(s *Authed) *Authed {
 		s.cookieName = cookieName
+		return s
+	}
+}
+func WithCache(c cache.Cache) OptFunc {
+	return func(s *Authed) *Authed {
+		s.store = c
+		return s
+	}
+}
+func WithMultiSession() OptFunc {
+	return func(s *Authed) *Authed {
+		s.MultiSession = true
 		return s
 	}
 }
@@ -93,10 +105,23 @@ func (s *Authed) FormatTokenStoreKey(key string) string {
 func (s *Authed) FormatRefreshTokenStoreKey(key string) string {
 	return fmt.Sprintf("%s/authed/refreshtoken/%s", s.cookieName, key)
 }
+
+func (s *Authed) FormatLinkTokenStoreKey(key string) string {
+	return fmt.Sprintf("%s/authed/linktk/%s", s.cookieName, key)
+}
+
 func (s *Authed) NewClaims(subject string, se *UserSession, duration time.Duration) *Payload {
 	timeNow := core.Now()
-	expiredAt := core.NewTime(timeNow.Add(duration))
-	se.ExpiredAt = expiredAt.Unix()
+	var expiredAt *core.Time
+	if se.ExpiredAt != 0 {
+		expiredAt = core.NewTime(time.Unix(se.ExpiredAt, 0))
+	} else {
+		expiredAt = core.NewTime(timeNow.Add(duration))
+		se.ExpiredAt = expiredAt.Unix()
+	}
+	if se.ID == "" {
+		se.ID = osutil.NumberID()
+	}
 	return &Payload{
 		Payload: codec.Payload{
 			Issuer:         s.Issuer,
@@ -105,7 +130,7 @@ func (s *Authed) NewClaims(subject string, se *UserSession, duration time.Durati
 			IssuedAt:       &timeNow,
 			NotBefore:      &timeNow,
 			Subject:        subject,
-			JWTID:          osutil.NumberID(),
+			JWTID:          se.ID,
 		},
 		UserSession: se,
 	}
@@ -167,8 +192,35 @@ func (s *Authed) createToken(payload *Payload) (token, refresh string, err error
 		return
 	}
 	err = s.store.SetWithTTL(s.FormatRefreshTokenStoreKey(refresh), token, s.RefreshTokenDuration)
+	if err != nil {
+		return
+	}
+	err = s.store.SetWithTTL(s.FormatLinkTokenStoreKey(payload.JWTID), refresh, s.RefreshTokenDuration)
 	return
 }
+
+func (s *Authed) DeleteToken(id string) (err error) {
+	var freshTokenByte []byte
+	freshTokenByte, err = s.store.Get(s.FormatLinkTokenStoreKey(id))
+	if err != nil {
+		return
+	}
+	err = s.store.Del(string(freshTokenByte))
+	if err != nil {
+		return
+	}
+	err = s.store.Del(s.FormatTokenStoreKey(id))
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s *Authed) DeleteTokenOnly(id string) (err error) {
+	err = s.store.Del(s.FormatTokenStoreKey(id))
+	return
+}
+
 func (s *Authed) RefreshToken(refreshToken string) (token, refresh string, err error) {
 	if refreshToken == "" {
 		err = ErrorInvalidRefreshToken
