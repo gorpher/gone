@@ -57,3 +57,15 @@ func IsDigitOrLetter(s string) bool {
 	}
 	return true
 }
+
+var TrueStrs = []string{"1", "true", "on", "yes"}
+
+func ToBool(str string) bool {
+	val := strings.ToLower(strings.TrimSpace(str))
+	for _, v := range TrueStrs {
+		if v == val {
+			return true
+		}
+	}
+	return false
+}

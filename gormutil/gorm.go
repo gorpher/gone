@@ -6,7 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	gormzerolog "github.com/gorpher/gorm-zerolog"
+	gormzerolog "github.com/gorpher/gone/gormutil/gorm-zerolog"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"

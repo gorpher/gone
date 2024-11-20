@@ -9,7 +9,6 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/google/go-cmp v0.5.5
 	github.com/google/uuid v1.6.0
-	github.com/gorpher/gorm-zerolog v0.0.0-20221216075606-0421af88051c
 	github.com/mileusna/useragent v1.3.5
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
