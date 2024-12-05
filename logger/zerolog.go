@@ -70,13 +70,51 @@ func SetZerolog(opts ...OptFunc) {
 	}
 }
 
-type MultiWriter struct {
+type syncFiles struct {
 	mutex sync.Mutex
+	files map[string]*os.File
+}
+
+func newSyncFiles() *syncFiles {
+	return &syncFiles{
+		files: make(map[string]*os.File, 7),
+	}
+}
+func (s *syncFiles) get(filename string) *os.File {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	fd := s.files[filename]
+	return fd
+}
+
+func (s *syncFiles) set(filename string, fd *os.File) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.files[filename] = fd
+}
+
+func (s *syncFiles) removeAll() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	var keys = make([]string, len(s.files))
+	var i int
+	for name, _ := range s.files {
+		keys[i] = name
+		i += 1
+	}
+	for _, key := range keys {
+		fd := s.files[key]
+		fd.Close() //nolint
+		delete(s.files, key)
+	}
+}
+
+type MultiWriter struct {
 	name  string
 	cfg   *LogConfig
 	cw    *zerolog.ConsoleWriter
 	date  string
-	files map[string]*os.File
+	files *syncFiles
 }
 
 func (m *MultiWriter) filename(level string) string {
@@ -113,7 +151,7 @@ func NewMultiWriter(opts ...OptFunc) *MultiWriter {
 			NoColor:    true,
 			TimeFormat: IsoZonedDateTime,
 		},
-		files: map[string]*os.File{},
+		files: newSyncFiles(),
 	}
 	for _, opt := range opts {
 		m = opt(m)
@@ -127,38 +165,30 @@ func (m *MultiWriter) checkDate() {
 	if m.date == nowDate {
 		return
 	}
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	m.date = nowDate
 	files := m.files
-	m.files = make(map[string]*os.File)
-	for name, fd := range files {
-		fd.Close() //nolint
-		delete(files, name)
-	}
+	m.files = newSyncFiles()
+	m.date = nowDate
+	files.removeAll()
 }
 
 func (m *MultiWriter) get(level string) io.Writer {
 	filename := m.filename(level)
-	fd, ok := m.files[filename]
-	if ok {
+	fd := m.files.get(filename)
+	if fd != nil {
 		if m.cfg.LogWithConsole {
 			return io.MultiWriter(fd, m.cw)
 		}
 		return fd
 	}
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
 	var err error
 	if m.cfg.LogDir != "" {
 		filename = filepath.Join(m.cfg.LogDir, filename)
 	}
 	fd, err = initLoggerFile(filename)
 	if err != nil {
-		log.Error().Err(err).Msg("init log file error")
 		return m.cw
 	}
-	m.files[filename] = fd
+	m.files.set(filename, fd)
 	if m.cfg.LogWithConsole {
 		return io.MultiWriter(fd, m.cw)
 	}
