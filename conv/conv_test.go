@@ -5,7 +5,7 @@ import "testing"
 func TestContains(t *testing.T) {
 	a := "a"
 	arr := []string{"a", "b"}
-	if !Contains(a, arr) {
+	if !Contains(arr, a) {
 		t.Errorf("%s 不在 %#v中", a, arr)
 		return
 	}
