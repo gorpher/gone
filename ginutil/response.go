@@ -65,9 +65,9 @@ func StatusOK(c *gin.Context, data interface{}) error {
 	return nil
 }
 
-func Status(ctx *gin.Context, status int) error {
+func Status(ctx *gin.Context, status int) {
 	ctx.Status(status)
-	return nil
+	return
 }
 
 // Cookie 设置Cooke
